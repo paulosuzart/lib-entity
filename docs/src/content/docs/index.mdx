@@ -1,0 +1,123 @@
+---
+title: LibEntity Documentation
+description: A powerful Java library for building type-safe, state-driven business entities
+template: splash
+hero:
+  tagline: Build robust business entities with type-safe state machines and validation
+  image:
+    file: ../../assets/hero.svg
+    alt: LibEntity - Type-safe entity framework with state machines
+  actions:
+    - text: Get Started
+      link: /guides/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/paulosuzart/lib-entity
+      icon: github
+      variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid stagger>
+  <Card title="Type-safe DSL" icon="pencil">
+    Build your business entities with a clean, type-safe DSL that catches errors at compile time.
+  </Card>
+
+  <Card title="State Machine" icon="random">
+    Define states and transitions for your entities with built-in validation and action handling.
+  </Card>
+
+  <Card title="Rich Field Types" icon="list">
+    Support for String, Integer, Boolean, BigDecimal, Enum, LocalDate, and more field types.
+  </Card>
+
+  <Card title="Validation" icon="check">
+    Built-in validation with customizable rules and error handling.
+  </Card>
+
+  <Card title="Spring Boot Ready" icon="rocket">
+    Seamless integration with Spring Boot for REST APIs and database persistence.
+  </Card>
+
+  <Card title="OpenAPI Generation" icon="document">
+    Automatic OpenAPI documentation generation for your entity endpoints.
+  </Card>
+</CardGrid>
+
+## Quick Example
+
+```java
+public enum InvoiceState {
+    DRAFT,
+    PENDING,
+    APPROVED,
+    REJECTED
+}
+
+@Data
+static class Invoice {
+    private BigDecimal amount;
+    private BigDecimal vat;
+    private boolean readyForApproval;
+    private String submitterId;
+    private String submitterDeviceId;
+    private String approverId;
+    private String approvalComment;
+}
+
+@Data
+static class SubmitInvoiceCommand implements ActionCommand {
+    private String submitterId;
+    private String submitterDeviceId;
+    @Override
+    public String getActionName() { return "submit"; }
+}
+
+// ... (other command classes omitted for brevity)
+
+EntityType<InvoiceState, Invoice, Object> invoiceType = EntityType.<InvoiceState, Invoice, Object>builder("Invoice")
+    .field("amount", BigDecimal.class, f -> f
+        .validateInState(InvoiceState.DRAFT, (state, entityData, request, ctx) -> {
+            if (entityData.getAmount() != null && entityData.getAmount().compareTo(new BigDecimal("10000")) > 0) {
+                ctx.addError("AMOUNT_TOO_LARGE", "Amount cannot exceed 10,000");
+            }
+        })
+    )
+    .field("vat", BigDecimal.class, f -> f
+        .validateInState(InvoiceState.DRAFT, (state, entityData, request, ctx) -> {
+            if (entityData.getVat() == null || entityData.getVat().compareTo(BigDecimal.ZERO) < 0) {
+                ctx.addError("VAT_INVALID", "VAT cannot be negative");
+            }
+        })
+    )
+    .action("submit", a -> a
+        .description("Submit invoice for approval")
+        .allowedStates(Set.of(InvoiceState.DRAFT))
+        .onlyIf(entityData -> entityData.getAmount() != null && entityData.getAmount().compareTo(BigDecimal.ZERO) > 0)
+        .commandType(SubmitInvoiceCommand.class)
+        .handler((state, request, command, entityData, mutator) -> {
+            entityData.setReadyForApproval(true);
+            entityData.setSubmitterId(command.getSubmitterId());
+            entityData.setSubmitterDeviceId(command.getSubmitterDeviceId());
+            mutator.setState(InvoiceState.PENDING);
+        })
+    )
+    // ... (other actions omitted for brevity)
+    .build();
+```
+
+## Why LibEntity?
+
+LibEntity helps you build robust business applications by providing:
+
+- **Type Safety**: Catch errors at compile time, not runtime
+- **Clean Architecture**: Separate business logic from infrastructure
+- **Flexible Validation**: Custom rules and error handling
+- **State Management**: Built-in state machine with transitions
+- **Spring Integration**: Ready for enterprise applications
+
+[Get started](/guides/quick-start/) with LibEntity today!

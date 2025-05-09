@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#1a1a1a"/>
+  
+  <!-- Entity Box -->
+  <rect x="100" y="100" width="200" height="200" rx="20" fill="#2563eb" opacity="0.9"/>
+  <text x="200" y="210" font-family="Arial" font-size="24" fill="white" text-anchor="middle">Entity</text>
+  
+  <!-- State Machine -->
+  <circle cx="500" cy="150" r="40" fill="#10b981" opacity="0.9"/>
+  <circle cx="600" cy="250" r="40" fill="#10b981" opacity="0.9"/>
+  <circle cx="400" cy="250" r="40" fill="#10b981" opacity="0.9"/>
+  
+  <!-- Connecting Lines -->
+  <line x1="500" y1="150" x2="600" y2="250" stroke="white" stroke-width="3"/>
+  <line x1="500" y1="150" x2="400" y2="250" stroke="white" stroke-width="3"/>
+  <line x1="400" y1="250" x2="600" y2="250" stroke="white" stroke-width="3"/>
+  
+  <!-- Text Labels -->
+  <text x="500" y="160" font-family="Arial" font-size="16" fill="white" text-anchor="middle">DRAFT</text>
+  <text x="600" y="260" font-family="Arial" font-size="16" fill="white" text-anchor="middle">APPROVED</text>
+  <text x="400" y="260" font-family="Arial" font-size="16" fill="white" text-anchor="middle">PAID</text>
+  
+  <!-- Connection Lines from Entity to State Machine -->
+  <line x1="300" y1="200" x2="460" y2="200" stroke="#4f46e5" stroke-width="3" stroke-dasharray="5,5"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="50" cy="50" r="20" fill="#4f46e5" opacity="0.5"/>
+  <circle cx="750" cy="350" r="30" fill="#2563eb" opacity="0.5"/>
+  <circle cx="700" cy="50" r="25" fill="#10b981" opacity="0.5"/>
+</svg>

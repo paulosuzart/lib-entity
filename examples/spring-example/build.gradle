@@ -1,0 +1,98 @@
+import org.jooq.meta.jaxb.Database
+import org.jooq.meta.jaxb.ForcedType
+import org.jooq.meta.jaxb.Logging
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "com.revolut.jooq-docker" version "0.3.12"
+}
+
+group = 'com.libentity.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    testCompileOnly {
+        extendsFrom testAnnotationProcessor
+    }
+}
+
+dependencies {
+    implementation project(':lib-entity-core')
+    implementation project(':lib-entity-jooq')
+    implementation project(':lib-entity-annotations')
+    annotationProcessor project(':lib-entity-jooq')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jooq'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.flywaydb:flyway-core:9.15.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'org.modelmapper:modelmapper:3.2.0'
+    
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+    
+    jdbc "org.postgresql:postgresql"
+    
+    testImplementation 'org.postgresql:postgresql:42.7.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    testImplementation 'org.testcontainers:postgresql'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "build/generated/sources/annotationProcessor/java/main"
+        }
+    }
+}
+
+tasks {
+    generateJooqClasses {
+        excludeFlywayTable = true
+        customizeGenerator {
+            it.withDatabase(new Database()
+                    .withInputSchema("public")
+                    .withIncludes(".*")
+                    .withExcludes("flyway_schema_history")
+                    .withForcedTypes(
+                            new ForcedType()
+                                    .withUserType("com.libentity.example.model.InvoiceState")
+                                    .withEnumConverter(true)
+                                    .withIncludeExpression(".*\\.status")
+                                    .withIncludeTypes(".*")
+                    )
+            )
+        }
+    }
+    
+    compileJava {
+        dependsOn(generateJooqClasses)
+    }
+}
+
+jooq {
+    image {
+        repository = "postgres"
+        tag = "15.0"
+    }
+}

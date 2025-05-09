@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.libentity'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+dependencies {
+    implementation project(':lib-entity-core')
+    implementation 'org.jooq:jooq:3.18.0'
+    implementation 'com.squareup:javapoet:1.13.0'
+    testImplementation 'org.jooq:jooq:3.18.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testImplementation 'com.google.testing.compile:compile-testing:0.21.0'
+    testImplementation 'com.google.truth:truth:1.4.2'
+}

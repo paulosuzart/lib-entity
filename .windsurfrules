@@ -1,0 +1,7 @@
+1. My build system is gradle using groovy
+2. docs folder stores documentation for the project
+3. README.md must remain interesting and beginner-friendly
+4. Use lombok as much as possible
+5. Make sure project compiles
+6. Make sure project is formatted by spotless plugin available (spotlessApply)
+7. No need to give full detailed explanation with code afer applying changes

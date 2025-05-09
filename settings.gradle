@@ -1,0 +1,11 @@
+rootProject.name = 'lib-entity'
+
+include 'lib-entity-core'
+include 'examples:spring-example'
+include 'lib-entity-jooq'
+include 'lib-entity-annotations'
+
+project(':lib-entity-core').projectDir = file('lib-entity-core')
+project(':examples:spring-example').projectDir = file('examples/spring-example')
+project(':lib-entity-jooq').projectDir = file('lib-entity-jooq')
+project(':lib-entity-annotations').projectDir = file('lib-entity-annotations')

@@ -1,0 +1,59 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.researchgate.release' version '2.8.1'
+}
+
+group = 'com.libentity'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+release {
+    failOnUnversionedFiles = false
+    failOnUpdateNeeded = false
+    git {
+        requireBranch = ""
+    }
+    tagTemplate = "client-${version}"
+}
+
+afterReleaseBuild {
+    dependsOn publish
+}
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'com.libentity'
+            artifactId 'libentity'
+            from components.java
+        }
+    }
+}
+
+dependencies {
+    api 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
+
+    api 'io.swagger.core.v3:swagger-core-jakarta:2.2.20'
+    api 'jakarta.validation:jakarta.validation-api:3.0.2'
+    api 'org.slf4j:slf4j-api:2.0.12'
+    
+    implementation 'com.google.guava:guava:33.0.0-jre'
+    
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation("org.mockito:mockito-core:5.17.0")
+    testImplementation 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+}
