@@ -1,4 +1,4 @@
-package com.libentity.example.commands;
+package com.libentity.example.invoice.command;
 
 import lombok.Data;
 

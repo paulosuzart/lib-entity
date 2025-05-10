@@ -1,4 +1,4 @@
-package com.libentity.example.model;
+package com.libentity.example.invoice.model;
 
 import com.libentity.core.filter.RangeFilter;
 import com.libentity.jooqsupport.annotation.*;

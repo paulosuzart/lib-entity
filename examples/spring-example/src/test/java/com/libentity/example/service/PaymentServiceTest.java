@@ -3,9 +3,10 @@ package com.libentity.example.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.libentity.example.ExampleApplication;
-import com.libentity.example.commands.ApprovePaymentCommand;
-import com.libentity.example.model.PaymentAggregate;
-import com.libentity.example.model.PaymentState;
+import com.libentity.example.payment.command.ApprovePaymentCommand;
+import com.libentity.example.payment.model.PaymentAggregate;
+import com.libentity.example.payment.model.PaymentState;
+import com.libentity.example.payment.service.PaymentService;
 import com.libentity.example.test.BaseIntegrationTest;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

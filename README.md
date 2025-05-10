@@ -2,6 +2,8 @@
 
 LibEntity is a powerful (and fun!) Java library for building type-safe, state-driven business entities with validation and action handling. It provides a clean, expressive DSL for defining entities, their states, fields, and actions. It's like Spring Boot for your business rules, but with more good vibes and less boilerplate!
 
+**[Check the live documentation for more details](https://paulosuzart.github.io/lib-entity-doc/)**
+
 ## lib-entity vs Traditional Hexagonal Architecture
 
 | Feature/Aspect           | lib-entity                                                                 | Traditional Hexagonal Architecture (Hand-Made)        |

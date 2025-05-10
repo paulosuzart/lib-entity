@@ -1,10 +1,10 @@
-package com.libentity.example.controller;
+package com.libentity.example.invoice.controller;
 
-import com.libentity.example.commands.CreateInvoiceCommand;
-import com.libentity.example.commands.InvoiceActionCommand;
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.service.InvoiceService;
-import com.libentity.example.service.InvoiceWithRateResponse;
+import com.libentity.example.invoice.command.CreateInvoiceCommand;
+import com.libentity.example.invoice.command.InvoiceActionCommand;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.service.InvoiceService;
+import com.libentity.example.invoice.service.InvoiceWithRateResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

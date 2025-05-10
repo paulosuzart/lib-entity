@@ -5,14 +5,15 @@ import com.libentity.annotation.processor.EntityTypeRegistry;
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.SyncActionExecutor;
 import com.libentity.core.entity.EntityType;
-import com.libentity.example.model.PaymentRequestContext;
-import com.libentity.example.model.PaymentState;
+import com.libentity.example.payment.model.PaymentRequestContext;
+import com.libentity.example.payment.model.PaymentState;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@SuppressWarnings("unchecked")
 public class PaymentEntityTypeConfig {
 
     @Bean
@@ -21,7 +22,7 @@ public class PaymentEntityTypeConfig {
         var options = new EntityAnnotationProcessor.Options(context::getBean);
 
         EntityAnnotationProcessor processor = new EntityAnnotationProcessor(options);
-        return processor.buildEntityTypes("com.libentity.example.model");
+        return processor.buildEntityTypes("com.libentity.example.payment.model");
     }
 
     @Bean

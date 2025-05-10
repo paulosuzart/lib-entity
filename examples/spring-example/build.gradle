@@ -1,6 +1,5 @@
 import org.jooq.meta.jaxb.Database
 import org.jooq.meta.jaxb.ForcedType
-import org.jooq.meta.jaxb.Logging
 
 plugins {
     id 'java'
@@ -54,7 +53,7 @@ dependencies {
     
     testImplementation 'org.postgresql:postgresql:42.7.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    testImplementation 'org.testcontainers:junit-jupiter:1.21.0'
     testImplementation 'org.testcontainers:postgresql'
 }
 
@@ -76,7 +75,7 @@ tasks {
                     .withExcludes("flyway_schema_history")
                     .withForcedTypes(
                             new ForcedType()
-                                    .withUserType("com.libentity.example.model.InvoiceState")
+                                    .withUserType("com.libentity.example.invoice.model.InvoiceState")
                                     .withEnumConverter(true)
                                     .withIncludeExpression(".*\\.status")
                                     .withIncludeTypes(".*")

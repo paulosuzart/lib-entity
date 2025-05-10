@@ -3,9 +3,9 @@ package com.libentity.example.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.libentity.example.ExampleApplication;
-import com.libentity.example.commands.CreateInvoiceCommand;
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.service.InvoiceWithRateResponse;
+import com.libentity.example.invoice.command.CreateInvoiceCommand;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.service.InvoiceWithRateResponse;
 import com.libentity.example.test.BaseIntegrationTest;
 import java.math.BigDecimal;
 import java.time.LocalDate;

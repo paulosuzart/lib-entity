@@ -1,15 +1,15 @@
-package com.libentity.example.service;
+package com.libentity.example.invoice.service;
 
 import com.libentity.core.action.ActionCommand;
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.ActionResult;
 import com.libentity.core.validation.ValidationContext;
-import com.libentity.example.commands.CreateInvoiceCommand;
-import com.libentity.example.model.Invoice;
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.model.InvoiceRequestContext;
-import com.libentity.example.model.InvoiceState;
-import com.libentity.example.repository.InvoiceRepository;
+import com.libentity.example.invoice.command.CreateInvoiceCommand;
+import com.libentity.example.invoice.model.Invoice;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.model.InvoiceRequestContext;
+import com.libentity.example.invoice.model.InvoiceState;
+import com.libentity.example.invoice.repository.InvoiceRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,9 +1,9 @@
-package com.libentity.example.model;
+package com.libentity.example.payment.model;
 
 import com.libentity.annotation.Action;
 import com.libentity.annotation.EntityDefinition;
 import com.libentity.annotation.Field;
-import com.libentity.example.commands.ApprovePaymentCommand;
+import com.libentity.example.payment.command.ApprovePaymentCommand;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.Data;

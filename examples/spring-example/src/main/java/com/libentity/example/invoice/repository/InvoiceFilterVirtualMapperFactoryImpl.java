@@ -1,9 +1,9 @@
-package com.libentity.example.repository;
+package com.libentity.example.invoice.repository;
 
 import static org.jooq.generated.tables.Invoice.INVOICE;
 
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.model.InvoiceFilterJooqMeta.InvoiceFilterJooqMetaVirtualMapperFactory;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.model.InvoiceFilterJooqMeta.InvoiceFilterJooqMetaVirtualMapperFactory;
 import com.libentity.jooqsupport.VirtualConditionMapper;
 import com.libentity.jooqsupport.annotation.Comparator;
 import java.util.List;

@@ -1,13 +1,14 @@
-package com.libentity.example.repository;
+package com.libentity.example.invoice.repository;
 
 import static org.jooq.generated.tables.Invoice.INVOICE;
 
 import com.libentity.core.persistence.EntityStore;
 import com.libentity.core.persistence.FilterStore;
-import com.libentity.example.model.Invoice;
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.model.InvoiceFilterJooqMeta;
-import com.libentity.example.model.InvoiceFilterJooqMeta.InvoiceFilterJooqMetaVirtualMapperFactory;
+import com.libentity.example.invoice.model.Invoice;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.model.InvoiceFilterJooqMeta;
+import com.libentity.example.invoice.model.InvoiceFilterJooqMeta.InvoiceFilterJooqMetaVirtualMapperFactory;
+import com.libentity.example.invoice.model.InvoiceState;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -123,15 +124,16 @@ public class InvoiceRepository implements EntityStore<Invoice, Long>, FilterStor
         record.setReceiptNumber(invoice.getReceiptNumber());
         record.setReadyForApproval(invoice.isReadyForApproval());
         record.setApprovalComment(invoice.getApprovalComment());
-        record.setStatus(
-                invoice.getState() != null ? invoice.getState() : com.libentity.example.model.InvoiceState.DRAFT);
+        record.setStatus(invoice.getState() != null ? invoice.getState() : InvoiceState.DRAFT);
     }
 
     private LocalDate asLocalDate(Object date) {
-        if (date == null) return null;
-        if (date instanceof LocalDate ld) return ld;
-        if (date instanceof java.sql.Date d) return d.toLocalDate();
-        if (date instanceof java.time.chrono.ChronoLocalDate cld) return LocalDate.from(cld);
-        throw new IllegalArgumentException("Unknown date type: " + date.getClass());
+        return switch (date) {
+            case null -> null;
+            case LocalDate ld -> ld;
+            case java.sql.Date d -> d.toLocalDate();
+            case java.time.chrono.ChronoLocalDate cld -> LocalDate.from(cld);
+            default -> throw new IllegalArgumentException("Unknown date type: " + date.getClass());
+        };
     }
 }

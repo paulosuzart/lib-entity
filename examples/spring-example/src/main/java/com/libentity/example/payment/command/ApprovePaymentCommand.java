@@ -1,4 +1,4 @@
-package com.libentity.example.commands;
+package com.libentity.example.payment.command;
 
 import java.util.UUID;
 

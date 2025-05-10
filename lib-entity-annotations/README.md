@@ -4,14 +4,14 @@ This module provides an annotation-based DSL for defining entity types, actions,
 
 ## Quick Comparison: Annotation DSL vs. Core DSL
 
-| Feature               | Annotation DSL (This Module)                      | Core DSL (`library` module)                 |
-|----------------------|---------------------------------------------------|---------------------------------------------|
-| Entity Definition    | `@ActionHandlerFor(entity = ...)`                  | `EntityType.builder("...")`                |
-| Action Definition    | `@Handle`, `@Action`, `@OnlyIf` on methods        | `.action("name", ...)`                      |
-| Validator Definition | `@InStateValidator`, `@TransitionValidator`       | `.inStateValidator(...)`, `.transitionValidator(...)` |
-| Command Type         | POJO + `@EntityCommand(action = ...)`             | Must implement `ActionCommand` interface    |
-| Allowed States       | `@Action(allowedStates = {"STATE"})`             | `.allowedStates(EnumSet.of(...))`           |
-| Extensibility        | Add new annotations or handlers                   | Extend builder or entity classes            |
+| Feature               | Annotation DSL (This Module)                | Core DSL (`library` module)                 |
+|----------------------|---------------------------------------------|---------------------------------------------|
+| Entity Definition    | `@ActionHandlerFor(entity = ...)`           | `EntityType.builder("...")`                |
+| Action Definition    | `@Handle`, `@Action`, `@OnlyIf` on methods  | `.action("name", ...)`                      |
+| Validator Definition | `@InStateValidator`, `@TransitionValidator` | `.inStateValidator(...)`, `.transitionValidator(...)` |
+| Command Type         | POJO                                        | Must implement `ActionCommand` interface    |
+| Allowed States       | `@Action(allowedStates = {"STATE"})`        | `.allowedStates(EnumSet.of(...))`           |
+| Extensibility        | Add new annotations or handlers             | Extend builder or entity classes            |
 
 ---
 
@@ -33,7 +33,6 @@ public class InvoiceActionHandler {
     }
 }
 
-@EntityCommand(action = "submitInvoice")
 @Data
 @AllArgsConstructor
 public class SubmitInvoiceCommand {
@@ -59,7 +58,7 @@ EntityType<InvoiceState, InvoiceRequest> invoiceType = EntityType.builder("Invoi
 
 ## Features
 - **Declarative Action & Validator Registration:** Define actions, guards, and validators using simple annotations.
-- **Command Flexibility:** Commands can be POJOs with `@EntityCommand`, no need to implement interfaces.
+- **Command Flexibility:** Commands can be POJOs, no need to implement interfaces.
 - **Type Safety:** The processor checks handler signatures and state names at build time.
 - **Integration:** Outputs real `EntityType` objects compatible with the core engine.
 

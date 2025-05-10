@@ -1,4 +1,4 @@
-package com.libentity.example.commands;
+package com.libentity.example.invoice.command;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -1,11 +1,11 @@
-package com.libentity.example.service;
+package com.libentity.example.payment.service;
 
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.validation.ValidationContext;
-import com.libentity.example.commands.ApprovePaymentCommand;
-import com.libentity.example.model.PaymentAggregate;
-import com.libentity.example.model.PaymentRequestContext;
-import com.libentity.example.model.PaymentState;
+import com.libentity.example.payment.command.ApprovePaymentCommand;
+import com.libentity.example.payment.model.PaymentAggregate;
+import com.libentity.example.payment.model.PaymentRequestContext;
+import com.libentity.example.payment.model.PaymentState;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

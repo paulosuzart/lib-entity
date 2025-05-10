@@ -1,4 +1,4 @@
-package com.libentity.example.model;
+package com.libentity.example.invoice.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

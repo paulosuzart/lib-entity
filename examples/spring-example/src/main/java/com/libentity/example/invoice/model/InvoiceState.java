@@ -1,6 +1,6 @@
-package com.libentity.example.model;
+package com.libentity.example.invoice.model;
 
-public enum PaymentState {
+public enum InvoiceState {
     DRAFT,
     PENDING_APPROVAL,
     APPROVED,

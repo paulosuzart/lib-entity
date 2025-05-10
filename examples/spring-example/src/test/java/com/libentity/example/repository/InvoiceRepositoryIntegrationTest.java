@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.libentity.core.filter.RangeFilter;
 import com.libentity.example.ExampleApplication;
-import com.libentity.example.model.Invoice;
-import com.libentity.example.model.InvoiceFilter;
-import com.libentity.example.model.InvoiceState;
+import com.libentity.example.invoice.model.Invoice;
+import com.libentity.example.invoice.model.InvoiceFilter;
+import com.libentity.example.invoice.model.InvoiceState;
+import com.libentity.example.invoice.repository.InvoiceRepository;
 import com.libentity.example.test.BaseIntegrationTest;
 import java.math.BigDecimal;
 import java.time.LocalDate;

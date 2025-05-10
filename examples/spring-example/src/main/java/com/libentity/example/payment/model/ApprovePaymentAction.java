@@ -1,8 +1,8 @@
-package com.libentity.example.model;
+package com.libentity.example.payment.model;
 
 import com.libentity.annotation.Handle;
 import com.libentity.core.state.StateMutator;
-import com.libentity.example.commands.ApprovePaymentCommand;
+import com.libentity.example.payment.command.ApprovePaymentCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
