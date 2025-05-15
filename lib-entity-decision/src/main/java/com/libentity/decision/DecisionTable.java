@@ -42,7 +42,6 @@ public class DecisionTable<I, O, V> {
                 // early termination
                 return new DecisionResult.FirstMatch<>(matchingRule.getOutput(), resultByAttribute);
             }
-
         }
         return new DecisionResult.None<>();
     }

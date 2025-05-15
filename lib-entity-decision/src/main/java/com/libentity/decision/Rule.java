@@ -25,6 +25,4 @@ public class Rule<T> {
     public static <T> Rule<T> test(Predicate<T> predicate) {
         return new Rule<>(new RuleEval.Test<>(predicate));
     }
-
-
 }

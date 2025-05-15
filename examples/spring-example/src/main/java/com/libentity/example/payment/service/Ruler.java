@@ -14,19 +14,28 @@ import java.util.List;
 import java.util.UUID;
 
 public class Ruler {
+    enum Action {
+        ALLOW_APPROVAL,
+        DENY_APPROVAL
+    }
 
     static void sExpression() {
         var vatExempt = UUID.randomUUID();
         var inputProvider = new InvoiceInputRuleProvider();
-
         var rules = List.of(
                 new MatchingRule<>(
-                        new InvoiceInput(any(), isSet(), test(v -> v.doubleValue() > 0.0)),
-                        Boolean.TRUE,
+                        new InvoiceInput(
+                                // any() means it will basically evaluate to true
+                                any(),
+                                // it is true if the attribute is present
+                                isSet(),
+                                // custom arbitrary tests
+                                test(v -> v.doubleValue() > 0.0)),
+                        Action.DENY_APPROVAL,
                         inputProvider),
                 new MatchingRule<>(
                         new InvoiceInput(is(vatExempt), any(), test(v -> v.doubleValue() > 100.0)),
-                        Boolean.TRUE,
+                        Action.ALLOW_APPROVAL,
                         inputProvider));
 
         var out = new DecisionTable<>(rules)
