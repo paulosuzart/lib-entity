@@ -2,7 +2,10 @@ package com.libentity.decision;
 
 import java.util.List;
 
-public interface InputProvider<I> {
+public interface InputProvider<I, V> {
 
-    List<Rule<?>> getRules(I input);
+    /**
+     * "compiles" each rule of an input type
+     */
+    List<CompiledRule<V, ?>> getCompileRules(I input);
 }

@@ -1,19 +1,18 @@
 package com.libentity.decision;
 
 import java.util.List;
-import java.util.function.Function;
+import lombok.Getter;
 
-public class MatchingRule<I, O> {
+@Getter
+public class MatchingRule<I, O, V> {
 
-    private I matching;
-    private O output;
-    private final List<Rule<?>> rules;
+    private final I matching;
+    private final O output;
+    private final List<CompiledRule<V, ?>> rules;
 
-    public MatchingRule(I matching, O output, Function<I, List<Rule<?>>> inputProvider) {
-        this.rules = inputProvider.apply(matching);
-    }
-
-    List<Rule<?>> getRules() {
-        return rules;
+    public MatchingRule(I matching, O output, InputProvider<I, V> inputProvider) {
+        this.rules = inputProvider.getCompileRules(matching);
+        this.output = output;
+        this.matching = matching;
     }
 }
