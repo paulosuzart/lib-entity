@@ -3,31 +3,40 @@ package com.libentity.decision;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import lombok.Getter;
 
+@Getter
 public class DecisionTable<I, O, V> {
+    private final String name;
     private final List<MatchingRule<I, O, V>> matchingRules;
+    private final InputProvider<I, V> inputProvider;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DecisionTable<?, ?, ?> that = (DecisionTable<?, ?, ?>) o;
-        return Objects.equals(matchingRules, that.matchingRules);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(matchingRules);
-    }
-
-    public DecisionTable(List<MatchingRule<I, O, V>> matchingRules) {
+    public DecisionTable(String name, List<MatchingRule<I, O, V>> matchingRules, InputProvider<I, V> inputProvider) {
+        this.name = name;
         this.matchingRules = matchingRules;
+        this.inputProvider = inputProvider;
     }
 
-    public DecisionResult evaluateFirst(V value) {
+    public DecisionResult<O, V> evaluateFirst(V value) {
+        if (value == null) {
+            throw new RuntimeException("Value cannot be null");
+        }
+
+        if (matchingRules == null || matchingRules.isEmpty()) {
+            throw new RuntimeException("No matching rules found");
+        }
+
+        Map<String, Object> inputVariables = inputProvider.getCompileRules(matchingRules.getFirst().getInput()).stream()
+                .collect(Collectors.toMap(
+                        CompiledRule::name, e -> e.extractionFunction().apply(value)));
+
         for (MatchingRule<I, O, V> matchingRule : matchingRules) {
+
+            if (matchingRule.getRules() == null || matchingRule.getRules().isEmpty()) {
+                throw new RuntimeException("No rules found for matching rule");
+            }
             boolean matches = true;
             Map<String, Boolean> resultByAttribute = new LinkedHashMap<>();
             for (var rule : matchingRule.getRules()) {
@@ -40,15 +49,9 @@ public class DecisionTable<I, O, V> {
             }
             if (matches) {
                 // early termination
-                return new DecisionResult.FirstMatch<>(matchingRule.getOutput(), resultByAttribute);
+                return new DecisionResult.FirstMatch<>(value, matchingRule.getOutput(), inputVariables);
             }
         }
-        return new DecisionResult.None<>();
-    }
-
-    public sealed interface DecisionResult {
-        record FirstMatch<O>(O output, Map<String, Boolean> resultByRuleName) implements DecisionResult {}
-
-        record None<O>() implements DecisionResult {}
+        return new DecisionResult.None<>(value, null, inputVariables);
     }
 }

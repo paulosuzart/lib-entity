@@ -1,45 +1,122 @@
 package com.libentity.decision;
 
+import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
-import lombok.AllArgsConstructor;
 
-public sealed interface RuleEval<T> permits RuleEval.CatchAll, RuleEval.Is, RuleEval.IsSet, RuleEval.Test {
-    boolean eval(T value);
+public class RuleEval<T> {
 
-    final class CatchAll<T> implements RuleEval<T> {
-        @Override
-        public boolean eval(Object ignored) {
-            return true;
+    protected Predicate<T> predicate;
+
+    RuleEval(Predicate<T> evalFn) {
+        this.predicate = evalFn;
+    }
+
+    public boolean eval(T value) {
+        return predicate.test(value);
+    }
+
+    public RuleEval<T> not() {
+        return new RuleEval<>(t -> !eval(t));
+    }
+
+    public static class CatchAll<T> extends RuleEval<T> {
+        CatchAll() {
+            super(t -> true);
         }
     }
 
-    @AllArgsConstructor
-    final class Is<T> implements RuleEval<T> {
-        T target;
-
-        @Override
-        public boolean eval(T value) {
-            return Objects.equals(target, value);
+    public static class Is<T> extends RuleEval<T> {
+        Is(T target) {
+            super(t -> Objects.equals(target, t));
         }
     }
 
-    @AllArgsConstructor
-    final class IsSet<T> implements RuleEval<T> {
-
-        @Override
-        public boolean eval(T value) {
-            return value != null;
+    static class IsSet<T> extends RuleEval<T> {
+        IsSet() {
+            super(Objects::nonNull);
         }
     }
 
-    @AllArgsConstructor
-    final class Test<T> implements RuleEval<T> {
-        Predicate<T> predicate;
+    static final class Test<T> extends RuleEval<T> {
 
-        @Override
-        public boolean eval(T value) {
-            return predicate.test(value);
+        Test(Predicate<T> predicate) {
+            super(predicate);
+        }
+    }
+
+    static class Lt<T extends Number> extends RuleEval<T> {
+        private T target;
+
+        public Lt(T target) {
+            super(value -> {
+                if (value == null || target == null) {
+                    return false;
+                }
+                BigDecimal valueBD = new BigDecimal(value.toString());
+                BigDecimal targetBD = new BigDecimal(target.toString());
+                return valueBD.compareTo(targetBD) < 0;
+            });
+            this.target = target;
+        }
+    }
+
+    static class Lte<T extends Number> extends RuleEval<T> {
+        private T target;
+
+        public Lte(T target) {
+            // keeping full code duplication for now
+            super(value -> {
+                if (value == null || target == null) {
+                    return false;
+                }
+                BigDecimal valueBD = new BigDecimal(value.toString());
+                BigDecimal targetBD = new BigDecimal(target.toString());
+                return valueBD.compareTo(targetBD) <= 0;
+            });
+            this.target = target;
+        }
+    }
+
+    public static class Gt<T extends Number> extends RuleEval<T> {
+        private T target;
+
+        public Gt(T target) {
+            super(value -> {
+                if (value == null || target == null) {
+                    return false;
+                }
+                BigDecimal valueBD = new BigDecimal(value.toString());
+                BigDecimal targetBD = new BigDecimal(target.toString());
+                return valueBD.compareTo(targetBD) > 0;
+            });
+            this.target = target;
+        }
+    }
+
+    public static class Gte<T extends Number> extends RuleEval<T> {
+        private T target;
+
+        public Gte(T target) {
+            super(value -> {
+                if (value == null || target == null) {
+                    return false;
+                }
+                BigDecimal valueBD = new BigDecimal(value.toString());
+                BigDecimal targetBD = new BigDecimal(target.toString());
+                return valueBD.compareTo(targetBD) >= 0;
+            });
+            this.target = target;
+        }
+    }
+
+    public static class In<T> extends RuleEval<T> {
+        Set<T> target;
+
+        public In(Set<T> target) {
+            super(target::contains);
+            this.target = target;
         }
     }
 }

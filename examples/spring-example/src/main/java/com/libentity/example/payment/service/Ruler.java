@@ -1,16 +1,20 @@
 package com.libentity.example.payment.service;
 
 import static com.libentity.decision.Rule.any;
+import static com.libentity.decision.Rule.gt;
+import static com.libentity.decision.Rule.in;
 import static com.libentity.decision.Rule.is;
 import static com.libentity.decision.Rule.isSet;
-import static com.libentity.decision.Rule.test;
+import static com.libentity.decision.Rule.lt;
 
+import com.libentity.decision.DecisionResult;
 import com.libentity.decision.DecisionTable;
 import com.libentity.decision.MatchingRule;
 import com.libentity.example.invoice.model.Invoice;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class Ruler {
@@ -22,6 +26,7 @@ public class Ruler {
     static void sExpression() {
         var vatExempt = UUID.randomUUID();
         var inputProvider = new InvoiceInputRuleProvider();
+        var approver = UUID.randomUUID();
         var rules = List.of(
                 new MatchingRule<>(
                         new InvoiceInput(
@@ -30,18 +35,30 @@ public class Ruler {
                                 // it is true if the attribute is present
                                 isSet(),
                                 // custom arbitrary tests
-                                test(v -> v.doubleValue() > 0.0)),
+                                lt(BigDecimal.valueOf(200.0)),
+                                isSet()),
                         Action.DENY_APPROVAL,
                         inputProvider),
                 new MatchingRule<>(
-                        new InvoiceInput(is(vatExempt), any(), test(v -> v.doubleValue() > 100.0)),
+                        new InvoiceInput(
+                                // If the org fully matches
+                                in(Set.of(vatExempt)),
+                                // catch all
+                                any(),
+                                // grater than 100
+                                gt(BigDecimal.valueOf(100.0)),
+                                is(approver)),
                         Action.ALLOW_APPROVAL,
                         inputProvider));
 
-        var out = new DecisionTable<>(rules)
-                .evaluateFirst(new InvoiceInputValue(UUID.randomUUID(), LocalDate.now(), BigDecimal.TEN));
+        var result = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
+                .evaluateFirst(new InvoiceInputValue(UUID.randomUUID(), LocalDate.now(), BigDecimal.TEN, approver));
 
-        System.out.println("Output was" + out);
+        switch (result) {
+            case DecisionResult.None<Action, InvoiceInputValue> ignored -> System.out.println("No rule match");
+            case DecisionResult.FirstMatch<Action, InvoiceInputValue> out -> System.out.println(out.diagnose());
+        }
+
     }
 
     public static void main(String[] args) {

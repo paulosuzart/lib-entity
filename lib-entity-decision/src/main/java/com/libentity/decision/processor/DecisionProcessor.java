@@ -195,7 +195,11 @@ public class DecisionProcessor extends AbstractProcessor {
             String name = fieldNames.get(i);
             TypeName fieldGenericType = fieldGenericTypes.get(i);
             compiledRulesBuilder.add(
-                    "new $T<$T, $T>($S, input.$L.ruleEvaly, f -> input.$L.ruleEvaly.eval(f), i -> i.$L())",
+                    """
+                       new $T<$T, $T>(
+                                      $S,
+                                      input.$L.getRuleEval(),
+                                      f -> input.$L.getRuleEval().eval(f), i -> i.$L())""",
                     ClassName.get("com.libentity.decision", "CompiledRule"),
                     valueType,
                     fieldGenericType,

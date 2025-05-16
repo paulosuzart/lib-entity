@@ -13,4 +13,5 @@ public class InvoiceInput {
     Rule<UUID> isVatExempt;
     Rule<LocalDate> isDateSet;
     Rule<BigDecimal> amount;
+    Rule<UUID> isApproved;
 }
