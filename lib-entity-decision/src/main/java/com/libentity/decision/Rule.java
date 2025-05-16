@@ -13,6 +13,14 @@ public class Rule<T> {
         this.ruleEval = ruleEval;
     }
 
+    public boolean eval(T value) {
+        return ruleEval.eval(value);
+    }
+
+    public Rule<T> not() {
+        return new Rule<>(ruleEval.not());
+    }
+
     public static <T> Rule<T> any() {
         return new Rule<>(new RuleEval.CatchAll<>());
     }
@@ -21,8 +29,12 @@ public class Rule<T> {
         return new Rule<>(new RuleEval.Is<>(arg));
     }
 
-    public static <T extends Number> Rule<T> gt(T arg) {
-        return new Rule<T>(new RuleEval.Gt<T>(arg));
+    public static <T extends Comparable<T>> Rule<T> gt(T arg) {
+        return new Rule<>(new RuleEval.Gt<>(arg));
+    }
+
+    public static <T extends Number> Rule<T> gte(T arg) {
+        return new Rule<>(new RuleEval.Gte<>(arg));
     }
 
     public static <T extends Number> Rule<T> lt(T arg) {

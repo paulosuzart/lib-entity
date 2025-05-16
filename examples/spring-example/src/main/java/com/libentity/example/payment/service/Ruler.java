@@ -31,7 +31,7 @@ public class Ruler {
                 new MatchingRule<>(
                         new InvoiceInput(
                                 // any() means it will basically evaluate to true
-                                any(),
+                                in(Set.of(vatExempt, UUID.randomUUID())),
                                 // it is true if the attribute is present
                                 isSet(),
                                 // custom arbitrary tests
@@ -52,13 +52,17 @@ public class Ruler {
                         inputProvider));
 
         var result = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
-                .evaluateFirst(new InvoiceInputValue(UUID.randomUUID(), LocalDate.now(), BigDecimal.TEN, approver));
+                .evaluateFirst(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
 
         switch (result) {
             case DecisionResult.None<Action, InvoiceInputValue> ignored -> System.out.println("No rule match");
             case DecisionResult.FirstMatch<Action, InvoiceInputValue> out -> System.out.println(out.diagnose());
+            default -> throw new IllegalStateException("Unexpected value: " + result);
         }
 
+        var x = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
+                .collect(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
+        System.out.println(x);
     }
 
     public static void main(String[] args) {
@@ -67,19 +71,5 @@ public class Ruler {
         invoice.setAmount(BigDecimal.TEN);
         invoice.setDueDate(LocalDate.now());
         sExpression();
-        //        var ammMiss = new Expression.Fact("invoice amount missing", () -> invoice.getAmount() == null);
-        //        var hasAmount = ammMiss.not();
-        //
-        //        var hasDate = new Expression.Or(List.of(
-        //                new Expression.Fact("invoice has date", () -> invoice.getDueDate() != null),
-        //                new Expression.Fact("invoice has x", () -> invoice.getApprovalDate() != null)));
-        //
-        //        var hasData = new Expression.And(List.of(
-        //                hasAmount, hasDate, new Expression.Fact("approver is set", () -> invoice.getApproverId() !=
-        // null)));
-        //
-        //        hasData.eval();
-        //
-        //        System.out.println(new MermaidVisitor().print(hasData));
     }
 }

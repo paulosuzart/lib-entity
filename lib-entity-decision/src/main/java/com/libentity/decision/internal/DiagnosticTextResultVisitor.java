@@ -1,17 +1,19 @@
-package com.libentity.decision;
+package com.libentity.decision.internal;
 
 import static java.lang.Math.max;
 
+import com.libentity.decision.DecisionResult;
+import com.libentity.decision.DecisionResultVisitor;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
-public class DiagnosticTextVisitor<O, V> implements DecisionVisitor<O, V> {
+public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<O, V> {
 
     private StringBuilder sb = new StringBuilder();
-    int rule = 0;
-    int longestVariableSize = 1;
+    private int rule = 0;
+    private int longestVariableSize = 3;
 
     public String getResult() {
         return sb.toString();
@@ -39,22 +41,21 @@ public class DiagnosticTextVisitor<O, V> implements DecisionVisitor<O, V> {
     private void visitEvaluatedRule(DecisionResult.EvaluatedRule<V> evaluatedRule) {
         sb.append("Rule ");
         sb.append(rule++);
-        sb.append("[")
-                .append(evaluatedRule.truthy() ? (char) 0x2717 : (char) 0x2713)
-                .append("]:\n");
+        sb.append(" [").append(getTruthyMarker(evaluatedRule.truthy())).append("]:\n");
         for (DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule : evaluatedRule.evaluatedRuleList()) {
             visitEvaluatedCompiledRule(vEvaluatedCompiledRule);
         }
     }
 
+    private String getTruthyMarker(boolean truthy) {
+        return truthy ? "t" : "f";
+    }
+
     private void visitEvaluatedCompiledRule(DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule) {
         sb.append("  ");
-        sb.append(StringUtils.rightPad(
-                        vEvaluatedCompiledRule.rule().name(),
-                        longestVariableSize
-                                - vEvaluatedCompiledRule.rule().name().length()))
+        sb.append(StringUtils.rightPad(vEvaluatedCompiledRule.rule().name(), longestVariableSize + 2))
                 .append("[")
-                .append(vEvaluatedCompiledRule.truthy() ? "✓" : "✗")
+                .append(getTruthyMarker(vEvaluatedCompiledRule.truthy()))
                 .append("]: ");
         sb.append(vEvaluatedCompiledRule.rule().ruleEval());
         sb.append("\n");
@@ -71,27 +72,6 @@ public class DiagnosticTextVisitor<O, V> implements DecisionVisitor<O, V> {
         sb.append(str);
         sb.append("\n");
     }
-
-    @Override
-    public void visitDecisionTable(DecisionTable decisionTable) {
-        sb.append("Diagnostic Table. Name: \n");
-        sb.append(decisionTable.getName());
-        sb.append("\n");
-    }
-
-    @Override
-    public void visitMatchingRule(MatchingRule matchingRule) {
-        sb.append("Matching Rule[ \n");
-    }
-
-    @Override
-    public void visitInput(Object inputValue) {
-        sb.append("Input: ");
-        sb.append(inputValue);
-    }
-
-    @Override
-    public void visitRule(Rule rule) {}
 
     @Override
     public void visitOutput(Object outputValue) {

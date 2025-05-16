@@ -1,9 +1,11 @@
 package com.libentity.decision;
 
+import com.libentity.decision.internal.DiagnosticTextResultVisitor;
 import java.util.List;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 public abstract sealed class DecisionResult<O, V> {
@@ -20,20 +22,39 @@ public abstract sealed class DecisionResult<O, V> {
     }
 
     public String diagnose() {
-        var x = new DiagnosticTextVisitor<O, V>();
+        var x = new DiagnosticTextResultVisitor<O, V>();
         x.visitResult(this);
         return x.getResult();
     }
 
     public record EvaluatedCompiledRule<V>(CompiledRule<V, ?> rule, boolean evaluated, boolean truthy) {}
 
-    public record EvaluatedRule<V>(boolean evaluated, boolean truthy, List<EvaluatedCompiledRule<V>> evaluatedRuleList) {}
+    public record EvaluatedRule<V>(
+            boolean evaluated, boolean truthy, List<EvaluatedCompiledRule<V>> evaluatedRuleList) {}
 
     @EqualsAndHashCode(callSuper = true)
     public static final class FirstMatch<O, V> extends DecisionResult<O, V> {
 
-        public FirstMatch(V inputValue, O output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
+        public FirstMatch(
+                V inputValue, O output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
             super(inputValue, output, variables, evaluatedRules);
+        }
+
+        //        private final Map<String, Boolean> resultByRuleName;
+        //        private final Map<String, CompileRuleEvaluationResult> resultByRuleNamex;
+        //        private final DecisionContext decisionContext;
+        //        private final DecisionTable decisionTable;
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @ToString(callSuper = true)
+    public static final class CollectMatch<O, V> extends DecisionResult<O, V> {
+        private List<O> outputs;
+
+        public CollectMatch(
+                V inputValue, List<O> output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
+            super(inputValue, null, variables, evaluatedRules);
+            outputs = output;
         }
 
         //        private final Map<String, Boolean> resultByRuleName;
