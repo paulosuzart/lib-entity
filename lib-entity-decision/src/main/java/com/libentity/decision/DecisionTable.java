@@ -1,5 +1,6 @@
 package com.libentity.decision;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,15 @@ public class DecisionTable<I, O, V> {
             throw new RuntimeException("No matching rules found");
         }
 
-        Map<String, Object> inputVariables = inputProvider.getCompileRules(matchingRules.getFirst().getInput()).stream()
+        Map<String, Object> inputVariables = inputProvider
+                .getCompileRules(matchingRules.getFirst().getInput())
+                .stream()
                 .collect(Collectors.toMap(
                         CompiledRule::name, e -> e.extractionFunction().apply(value)));
 
+        List<DecisionResult.EvaluatedRule<V>> evaluatedRules = new ArrayList<>();
         for (MatchingRule<I, O, V> matchingRule : matchingRules) {
-
+            List<DecisionResult.EvaluatedCompiledRule<V>> evaluatedCompiledRules = new ArrayList<>();
             if (matchingRule.getRules() == null || matchingRule.getRules().isEmpty()) {
                 throw new RuntimeException("No rules found for matching rule");
             }
@@ -46,12 +50,15 @@ public class DecisionTable<I, O, V> {
                 var result = evalF.apply(attributeValue);
                 matches = matches && result;
                 resultByAttribute.put(rule.name(), result);
+                evaluatedCompiledRules.add(new DecisionResult.EvaluatedCompiledRule<>(rule, true, matches));
             }
+            evaluatedRules.add(new DecisionResult.EvaluatedRule<>(true, matches, evaluatedCompiledRules));
             if (matches) {
                 // early termination
-                return new DecisionResult.FirstMatch<>(value, matchingRule.getOutput(), inputVariables);
+
+                return new DecisionResult.FirstMatch<>(value, matchingRule.getOutput(), inputVariables, evaluatedRules);
             }
         }
-        return new DecisionResult.None<>(value, null, inputVariables);
+        return new DecisionResult.None<>(value, null, inputVariables, evaluatedRules);
     }
 }

@@ -25,6 +25,11 @@ public class RuleEval<T> {
         CatchAll() {
             super(t -> true);
         }
+
+        @Override
+        public String toString() {
+            return "true";
+        }
     }
 
     public static class Is<T> extends RuleEval<T> {

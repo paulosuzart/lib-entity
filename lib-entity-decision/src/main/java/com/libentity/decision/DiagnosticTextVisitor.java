@@ -2,8 +2,10 @@ package com.libentity.decision;
 
 import static java.lang.Math.max;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 public class DiagnosticTextVisitor<O, V> implements DecisionVisitor<O, V> {
 
@@ -19,12 +21,43 @@ public class DiagnosticTextVisitor<O, V> implements DecisionVisitor<O, V> {
     public void visitResult(DecisionResult<O, V> decisionResult) {
         sb.append("Diagnostics: \n");
         if (decisionResult instanceof DecisionResult.None) {
-            sb.append("Result: None\n");
+            visitOutput(decisionResult.getOutput());
         } else if (decisionResult instanceof DecisionResult.FirstMatch<O, V> f) {
             visitOutput(decisionResult.getOutput());
             visitInputVariables(f.getVariables());
+            visitEvaluatedRules(f.getEvaluatedRules());
             sb.append("\n");
         }
+    }
+
+    private void visitEvaluatedRules(List<DecisionResult.EvaluatedRule<V>> evaluatedRules) {
+        for (DecisionResult.EvaluatedRule<V> evaluatedRule : evaluatedRules) {
+            visitEvaluatedRule(evaluatedRule);
+        }
+    }
+
+    private void visitEvaluatedRule(DecisionResult.EvaluatedRule<V> evaluatedRule) {
+        sb.append("Rule ");
+        sb.append(rule++);
+        sb.append("[")
+                .append(evaluatedRule.truthy() ? (char) 0x2717 : (char) 0x2713)
+                .append("]:\n");
+        for (DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule : evaluatedRule.evaluatedRuleList()) {
+            visitEvaluatedCompiledRule(vEvaluatedCompiledRule);
+        }
+    }
+
+    private void visitEvaluatedCompiledRule(DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule) {
+        sb.append("  ");
+        sb.append(StringUtils.rightPad(
+                        vEvaluatedCompiledRule.rule().name(),
+                        longestVariableSize
+                                - vEvaluatedCompiledRule.rule().name().length()))
+                .append("[")
+                .append(vEvaluatedCompiledRule.truthy() ? "✓" : "✗")
+                .append("]: ");
+        sb.append(vEvaluatedCompiledRule.rule().ruleEval());
+        sb.append("\n");
     }
 
     @Override
