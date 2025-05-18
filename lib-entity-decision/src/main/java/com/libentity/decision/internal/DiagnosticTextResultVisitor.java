@@ -2,8 +2,8 @@ package com.libentity.decision.internal;
 
 import static java.lang.Math.max;
 
-import com.libentity.decision.DecisionResult;
 import com.libentity.decision.DecisionResultVisitor;
+import com.libentity.decision.HitPolicy;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,39 +22,41 @@ public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<
     }
 
     @Override
-    public void visitResult(DecisionResult<O, V> decisionResult) {
+    public void visitResult(HitPolicy<O, V> hitPolicy) {
         sb.append("Diagnostics: \n");
-        sb.append("Hit Policy: ")
-                .append(decisionResult.getClass().getSimpleName())
-                .append("\n");
-        if (decisionResult instanceof DecisionResult.First<O, V> c) {
+        sb.append("Hit Policy: ").append(hitPolicy.getClass().getSimpleName()).append("\n");
+        if (hitPolicy instanceof HitPolicy.First<O, V> c) {
             visitOutput(c.getOutput());
-            visitInputVariables(decisionResult.getVariables());
+            visitInputVariables(hitPolicy.getVariables());
             visitEvaluatedRules(c.getEvaluatedRules());
-        } else if (decisionResult instanceof DecisionResult.Collect<O, V> c) {
+        } else if (hitPolicy instanceof HitPolicy.Collect<O, V> c) {
             visitOutput(c.getOutput());
-            visitInputVariables(decisionResult.getVariables());
+            visitInputVariables(hitPolicy.getVariables());
             visitEvaluatedRules(c.getEvaluatedRules());
 
-        } else if (decisionResult instanceof DecisionResult.Unique<O, V> c) {
+        } else if (hitPolicy instanceof HitPolicy.Unique<O, V> c) {
             visitOutput(c.getOutput());
-            visitInputVariables(decisionResult.getVariables());
+            visitInputVariables(hitPolicy.getVariables());
+            visitEvaluatedRules(c.getEvaluatedRules());
+        } else if (hitPolicy instanceof HitPolicy.Sum<O, V> c) {
+            visitOutput(c.getOutput());
+            visitInputVariables(hitPolicy.getVariables());
             visitEvaluatedRules(c.getEvaluatedRules());
         }
         sb.append("\n");
     }
 
-    private void visitEvaluatedRules(List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules) {
-        for (DecisionResult.EvaluatedMatchingRule<V, O> evaluatedRule : evaluatedRules) {
+    private void visitEvaluatedRules(List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+        for (HitPolicy.EvaluatedMatchingRule<V, O> evaluatedRule : evaluatedRules) {
             visitEvaluatedRule(evaluatedRule);
         }
     }
 
-    private void visitEvaluatedRule(DecisionResult.EvaluatedMatchingRule<V, O> evaluatedRule) {
+    private void visitEvaluatedRule(HitPolicy.EvaluatedMatchingRule<V, O> evaluatedRule) {
         sb.append("Rule ");
         sb.append(rule++);
         sb.append(" [").append(getTruthyMarker(evaluatedRule.truthy())).append("]:\n");
-        for (DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule : evaluatedRule.evaluatedRuleList()) {
+        for (HitPolicy.EvaluatedCompiledRule<V> vEvaluatedCompiledRule : evaluatedRule.evaluatedRuleList()) {
             visitEvaluatedCompiledRule(vEvaluatedCompiledRule);
         }
     }
@@ -63,7 +65,7 @@ public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<
         return truthy ? "t" : "f";
     }
 
-    private void visitEvaluatedCompiledRule(DecisionResult.EvaluatedCompiledRule<V> vEvaluatedCompiledRule) {
+    private void visitEvaluatedCompiledRule(HitPolicy.EvaluatedCompiledRule<V> vEvaluatedCompiledRule) {
         sb.append("  ");
         sb.append(StringUtils.rightPad(vEvaluatedCompiledRule.rule().name(), longestVariableSize + 2))
                 .append("[")

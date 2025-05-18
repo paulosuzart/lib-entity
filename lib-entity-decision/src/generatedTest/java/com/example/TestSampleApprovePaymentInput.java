@@ -1,5 +1,6 @@
 package com.example;
 
+import static com.libentity.decision.Rule.any;
 import static com.libentity.decision.Rule.gt;
 import static com.libentity.decision.Rule.gte;
 import static com.libentity.decision.Rule.is;
@@ -7,10 +8,9 @@ import static com.libentity.decision.Rule.lte;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
-import com.libentity.decision.DecisionResult;
-import com.libentity.decision.DecisionResult.Unique.UniqueResult.UniqueOutput;
 import com.libentity.decision.DecisionTable;
-import com.libentity.decision.EvaluationPolicy;
+import com.libentity.decision.HitPolicy;
+import com.libentity.decision.HitPolicy.Unique.UniqueResult.UniqueOutput;
 import com.libentity.decision.MatchingRule;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -47,8 +47,8 @@ public class TestSampleApprovePaymentInput {
                 MatchingRule.of(rule1, "Allowed", inputProvider), MatchingRule.of(rule2, "Denied", inputProvider));
 
         var decision = new DecisionTable<>("Sample", rules, inputProvider);
-        var outcome = decision.evaluate(inputValue, EvaluationPolicy.First);
-        if (outcome instanceof DecisionResult.First<String, ApprovePaymentInputValue> out) {
+        var outcome = decision.evaluateFirst(inputValue);
+        if (outcome instanceof HitPolicy.First<String, ApprovePaymentInputValue> out) {
             assertEquals(Optional.of("Allowed"), out.getOutput());
         } else {
             Assertions.fail("Unexpected decision outcome");
@@ -72,12 +72,9 @@ public class TestSampleApprovePaymentInput {
                 MatchingRule.of(rule1, "Allowed", inputProvider), MatchingRule.of(rule2, "Denied", inputProvider));
 
         var decision = new DecisionTable<>("Sample", rules, inputProvider);
-        var outcome = decision.evaluate(inputValue, EvaluationPolicy.Unique);
-        if (outcome instanceof DecisionResult.Unique<String, ApprovePaymentInputValue> out) {
-            assertEquals(new DecisionResult.Unique.UniqueResult.NonUniqueOutput(), out.getOutput());
-        } else {
-            Assertions.fail("Unexpected decision outcome");
-        }
+        var outcome = decision.evaluateUnique(inputValue);
+
+        assertEquals(new HitPolicy.Unique.UniqueResult.NonUniqueOutput(), outcome.getOutput());
     }
 
     @Test
@@ -97,15 +94,37 @@ public class TestSampleApprovePaymentInput {
                 MatchingRule.of(rule1, "Allowed", inputProvider), MatchingRule.of(rule2, "Denied", inputProvider));
 
         var decision = new DecisionTable<>("Sample", rules, inputProvider);
-        var outcome = decision.evaluate(inputValue, EvaluationPolicy.Unique);
+        var outcome = decision.evaluateUnique(inputValue);
+        if (outcome.getOutput() instanceof UniqueOutput<?> u
+                && u.output().isPresent()
+                && u.output().get() instanceof String s) {
+            assertEquals("Denied", s);
 
-        if (outcome instanceof DecisionResult.Unique<String, ApprovePaymentInputValue> out) {
+        } else {
+            Assertions.fail("Unexpected decision outcome");
+        }
+    }
 
-            switch (out.getOutput()) {
-                case UniqueOutput<?> u
-                when u.output().isPresent() && u.output().get() instanceof String s -> assertEquals("Denied", s);
-                default -> Assertions.fail("Unexpected Unique decision outcome");
-            }
+    @Test
+    void testSumPolicyWorks() {
+        var inputProvider = new ApprovePaymentInputRuleProvider();
+        var inputValue =
+                new ApprovePaymentInputValue(BigDecimal.TEN, Instant.now().minus(5, ChronoUnit.DAYS), 5, true);
+
+        var rule1 = new ApprovePaymentInput(gt(BigDecimal.valueOf(3.0)), any(), any(), any());
+
+        var rule2 = new ApprovePaymentInput(gte(BigDecimal.valueOf(10.0)), any(), any(), any());
+
+        var rules = List.of(
+                MatchingRule.of(rule1, new Discount(2), inputProvider),
+                MatchingRule.of(rule2, new Discount(5), inputProvider));
+        var decision = new DecisionTable<>("Discount amount", rules, inputProvider);
+        var out = decision.evaluateSum(inputValue, (o1, o2) -> new Discount(o1.discount() + o2.discount()));
+        System.out.println(out.diagnose());
+        if (out instanceof HitPolicy.Sum<Discount, ApprovePaymentInputValue> s) {
+            var output = s.getOutput();
+            Assertions.assertTrue(output.isPresent());
+            Assertions.assertEquals(7.0, output.get().discount());
         } else {
             Assertions.fail("Unexpected decision outcome");
         }
@@ -128,9 +147,9 @@ public class TestSampleApprovePaymentInput {
                 MatchingRule.of(rule1, "Allowed", inputProvider), MatchingRule.of(rule2, "Denied", inputProvider));
 
         var decision = new DecisionTable<>("Sample", rules, inputProvider);
-        var outcome = decision.evaluate(inputValue, EvaluationPolicy.Collect);
+        var outcome = decision.evaluateCollect(inputValue);
 
-        if (outcome instanceof DecisionResult.Collect<String, ApprovePaymentInputValue> out) {
+        if (outcome instanceof HitPolicy.Collect<String, ApprovePaymentInputValue> out) {
 
             assertIterableEquals(List.of("Allowed", "Denied"), out.getOutput());
         } else {

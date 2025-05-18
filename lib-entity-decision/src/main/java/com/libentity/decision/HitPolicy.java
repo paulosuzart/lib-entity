@@ -4,6 +4,7 @@ import com.libentity.decision.internal.DiagnosticTextResultVisitor;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,8 +13,8 @@ import lombok.ToString;
 
 @Getter
 @RequiredArgsConstructor
-public abstract sealed class DecisionResult<O, V>
-        permits DecisionResult.Collect, DecisionResult.First, DecisionResult.Unique {
+public abstract sealed class HitPolicy<O, V>
+        permits HitPolicy.Collect, HitPolicy.First, HitPolicy.Sum, HitPolicy.Unique {
     private final V inputValue;
     private final Map<String, Object> variables;
     private final List<EvaluatedMatchingRule<V, O>> evaluatedRules;
@@ -30,7 +31,7 @@ public abstract sealed class DecisionResult<O, V>
             boolean truthy, List<EvaluatedCompiledRule<V>> evaluatedRuleList, O output) {}
 
     @EqualsAndHashCode(callSuper = true)
-    public static final class First<O, V> extends DecisionResult<O, V> {
+    public static final class First<O, V> extends HitPolicy<O, V> {
         public First(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
             super(inputValue, variables, evaluatedRules);
         }
@@ -45,7 +46,7 @@ public abstract sealed class DecisionResult<O, V>
 
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
-    public static final class Collect<O, V> extends DecisionResult<O, V> {
+    public static final class Collect<O, V> extends HitPolicy<O, V> {
 
         public Collect(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
             super(inputValue, variables, evaluatedRules);
@@ -60,7 +61,31 @@ public abstract sealed class DecisionResult<O, V>
 
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
-    public static final class Unique<O, V> extends DecisionResult<O, V> {
+    public static final class Sum<O, V> extends HitPolicy<O, V> {
+
+        private final BinaryOperator<O> op;
+
+        public Sum(
+                V inputValue,
+                Map<String, Object> variables,
+                List<EvaluatedMatchingRule<V, O>> evaluatedRules,
+                BinaryOperator<O> op) {
+            super(inputValue, variables, evaluatedRules);
+            this.op = op;
+        }
+
+        public Optional<O> getOutput() {
+            return getEvaluatedRules().stream()
+                    .filter(EvaluatedMatchingRule::truthy)
+                    .distinct()
+                    .map(EvaluatedMatchingRule::output)
+                    .reduce(op);
+        }
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @ToString(callSuper = true)
+    public static final class Unique<O, V> extends HitPolicy<O, V> {
         public Unique(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
             super(inputValue, variables, evaluatedRules);
         }

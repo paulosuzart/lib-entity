@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import lombok.Getter;
 
@@ -20,7 +21,62 @@ public class DecisionTable<I, O, V> {
         this.inputProvider = inputProvider;
     }
 
-    public DecisionResult<O, V> evaluate(V value, EvaluationPolicy evaluationPolicy) {
+    public HitPolicy.Unique<O, V> evaluateUnique(V value) {
+        var factory = new ResultFactory<O, V, HitPolicy.Unique<O, V>>() {
+            @Override
+            public HitPolicy.Unique<O, V> getResult(
+                    V inputValue,
+                    Map<String, Object> variables,
+                    List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+                return new HitPolicy.Unique<>(value, variables, evaluatedRules);
+            }
+        };
+        return doEvaluate(value, factory);
+    }
+
+    public HitPolicy.Sum<O, V> evaluateSum(V value, BinaryOperator<O> mergeFunction) {
+        var factory = new ResultFactory<O, V, HitPolicy.Sum<O, V>>() {
+
+            @Override
+            public HitPolicy.Sum<O, V> getResult(
+                    V inputValue,
+                    Map<String, Object> variables,
+                    List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+                return new HitPolicy.Sum<>(inputValue, variables, evaluatedRules, mergeFunction);
+            }
+        };
+        return doEvaluate(value, factory);
+    }
+
+    public HitPolicy.Collect<O, V> evaluateCollect(V value) {
+        var factory = new ResultFactory<O, V, HitPolicy.Collect<O, V>>() {
+
+            @Override
+            public HitPolicy.Collect<O, V> getResult(
+                    V inputValue,
+                    Map<String, Object> variables,
+                    List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+                return new HitPolicy.Collect<>(inputValue, variables, evaluatedRules);
+            }
+        };
+        return doEvaluate(value, factory);
+    }
+
+    public HitPolicy.First<O, V> evaluateFirst(V inputValue) {
+        var factory = new ResultFactory<O, V, HitPolicy.First<O, V>>() {
+
+            @Override
+            public HitPolicy.First<O, V> getResult(
+                    V inputValue,
+                    Map<String, Object> variables,
+                    List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+                return new HitPolicy.First<>(inputValue, variables, evaluatedRules);
+            }
+        };
+        return doEvaluate(inputValue, factory);
+    }
+
+    private <Z extends HitPolicy<O, V>> Z doEvaluate(V value, ResultFactory<O, V, Z> resultFactory) {
         if (value == null) {
             throw new RuntimeException("Value cannot be null");
         }
@@ -35,9 +91,9 @@ public class DecisionTable<I, O, V> {
                 .forEach(
                         e -> inputVariables.put(e.name(), e.extractionFunction().apply(value)));
 
-        List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules = new ArrayList<>();
+        List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules = new ArrayList<>();
         for (MatchingRule<I, O, V> matchingRule : matchingRules) {
-            List<DecisionResult.EvaluatedCompiledRule<V>> evaluatedCompiledRules = new ArrayList<>();
+            List<HitPolicy.EvaluatedCompiledRule<V>> evaluatedCompiledRules = new ArrayList<>();
             if (matchingRule.getRules() == null || matchingRule.getRules().isEmpty()) {
                 throw new RuntimeException("No rules found for matching rule");
             }
@@ -49,13 +105,20 @@ public class DecisionTable<I, O, V> {
                 var evalF = (Function<Object, Boolean>) rule.evalFunction();
                 var result = evalF.apply(attributeValue);
                 matches = matches && result;
-                evaluatedCompiledRules.add(new DecisionResult.EvaluatedCompiledRule<>(rule, true, matches));
+                evaluatedCompiledRules.add(new HitPolicy.EvaluatedCompiledRule<>(rule, true, matches));
             }
 
-            var truthy = evaluatedCompiledRules.stream().allMatch(DecisionResult.EvaluatedCompiledRule::truthy);
-            evaluatedRules.add(new DecisionResult.EvaluatedMatchingRule<>(
+            var truthy = evaluatedCompiledRules.stream().allMatch(HitPolicy.EvaluatedCompiledRule::truthy);
+            evaluatedRules.add(new HitPolicy.EvaluatedMatchingRule<>(
                     truthy, evaluatedCompiledRules, matches ? matchingRule.getOutput() : null));
         }
-        return evaluationPolicy.crateResult(value, inputVariables, evaluatedRules);
+        return resultFactory.getResult(value, inputVariables, evaluatedRules);
+    }
+
+    interface ResultFactory<O, V, Z extends HitPolicy<O, V>> {
+        Z getResult(
+                V inputValue,
+                Map<String, Object> variables,
+                List<HitPolicy.EvaluatedMatchingRule<V, O>> evaluatedRules);
     }
 }
