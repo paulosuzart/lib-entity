@@ -8,9 +8,8 @@ import static com.libentity.decision.Rule.isSet;
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.SyncActionExecutor;
 import com.libentity.core.entity.EntityType;
-import com.libentity.decision.DecisionResult;
 import com.libentity.decision.DecisionTable;
-import com.libentity.decision.EvaluationPolicy;
+import com.libentity.decision.HitPolicy;
 import com.libentity.decision.MatchingRule;
 import com.libentity.example.invoice.command.ApproveInvoiceCommand;
 import com.libentity.example.invoice.command.CreateInvoiceCommand;
@@ -72,15 +71,13 @@ public class InvoiceEntityTypeConfig {
         EntityType<InvoiceState, InvoiceRequestContext> entityType =
                 EntityType.<InvoiceState, InvoiceRequestContext>builder("Invoice")
                         .validateInState(InvoiceState.DRAFT, (ignored, request, ctx) -> {
-                            var createDecision = createApprovalTable.evaluate(
-                                    new InvoiceInputValue(
-                                            request.newInvoice().getSubmitterId(),
-                                            request.newInvoice().getDueDate(),
-                                            request.newInvoice().getAmount(),
-                                            request.newInvoice().getApproverId()),
-                                    EvaluationPolicy.First);
+                            var createDecision = createApprovalTable.evaluateFirst(new InvoiceInputValue(
+                                    request.newInvoice().getSubmitterId(),
+                                    request.newInvoice().getDueDate(),
+                                    request.newInvoice().getAmount(),
+                                    request.newInvoice().getApproverId()));
                             log.info(createDecision.diagnose());
-                            if (createDecision instanceof DecisionResult.First<Boolean, InvoiceInputValue> out) {
+                            if (createDecision instanceof HitPolicy.First<Boolean, InvoiceInputValue> out) {
                                 if (out.getOutput().isEmpty()
                                         || Boolean.FALSE.equals(out.getOutput().get())) {
                                     ctx.addError(

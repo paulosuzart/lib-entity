@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface DecisionResultVisitor<O, V> {
 
-    void visitResult(DecisionResult<O, V> decisionResult);
+    void visitResult(HitPolicy<O, V> hitPolicy);
 
     void visitInputVariables(Map<String, Object> inputVariables);
 
