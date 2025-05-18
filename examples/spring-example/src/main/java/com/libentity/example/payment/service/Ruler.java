@@ -9,6 +9,7 @@ import static com.libentity.decision.Rule.lt;
 
 import com.libentity.decision.DecisionResult;
 import com.libentity.decision.DecisionTable;
+import com.libentity.decision.EvaluationPolicy;
 import com.libentity.decision.MatchingRule;
 import com.libentity.example.invoice.model.Invoice;
 import java.math.BigDecimal;
@@ -53,9 +54,9 @@ public class Ruler {
                         inputProvider));
 
         var result = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
-                .evaluateFirst(
+                .evaluate(
                         new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver),
-                        DecisionTable.EvaluationPolicy.Unique);
+                        EvaluationPolicy.First);
 
         if (Objects.requireNonNull(result) instanceof DecisionResult.First<Action, InvoiceInputValue> out) {
             System.out.println(out.diagnose());
@@ -67,12 +68,6 @@ public class Ruler {
         } else {
             throw new IllegalStateException("Unexpected value: " + result);
         }
-
-        //        var x = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
-        //                .collect(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
-        //
-        //        System.out.println("Collect");
-        //        System.out.println(x.diagnose());
     }
 
     public static void main(String[] args) {

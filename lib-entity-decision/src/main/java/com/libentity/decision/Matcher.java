@@ -64,13 +64,10 @@ public class Matcher<T> {
                         return value.compareTo(target) < 0;
                     },
                     "< %s".formatted(target));
-
         }
     }
 
     static class Lte<T extends Comparable<T>> extends Matcher<T> {
-        private T target;
-
         public Lte(T target) {
             // keeping full code duplication for now
             super(
@@ -81,7 +78,6 @@ public class Matcher<T> {
                         return value.compareTo(target) <= 0;
                     },
                     "<= %s".formatted(target));
-            this.target = target;
         }
     }
 

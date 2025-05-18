@@ -9,40 +9,6 @@ import lombok.Getter;
 
 @Getter
 public class DecisionTable<I, O, V> {
-    public enum EvaluationPolicy {
-        First {
-            @Override
-            <O, V> DecisionResult<O, V> crateResult(
-                    V inputValue,
-                    Map<String, Object> variables,
-                    List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules) {
-                return new DecisionResult.First<>(inputValue, variables, evaluatedRules);
-            }
-        },
-        Collect {
-            @Override
-            <O, V> DecisionResult<O, V> crateResult(
-                    V inputValue,
-                    Map<String, Object> variables,
-                    List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules) {
-                return new DecisionResult.Collect<>(inputValue, variables, evaluatedRules);
-            }
-        },
-        Unique {
-            @Override
-            <O, V> DecisionResult<O, V> crateResult(
-                    V inputValue,
-                    Map<String, Object> variables,
-                    List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules) {
-                return new DecisionResult.Unique<>(inputValue, variables, evaluatedRules);
-            }
-        };
-
-        abstract <O, V> DecisionResult<O, V> crateResult(
-                V inputValue,
-                Map<String, Object> variables,
-                List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules);
-    }
 
     private final String name;
     private final List<MatchingRule<I, O, V>> matchingRules;
@@ -54,7 +20,7 @@ public class DecisionTable<I, O, V> {
         this.inputProvider = inputProvider;
     }
 
-    public DecisionResult<O, V> evaluateFirst(V value, EvaluationPolicy evaluationPolicy) {
+    public DecisionResult<O, V> evaluate(V value, EvaluationPolicy evaluationPolicy) {
         if (value == null) {
             throw new RuntimeException("Value cannot be null");
         }

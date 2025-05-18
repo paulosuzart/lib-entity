@@ -43,12 +43,18 @@ class MatcherTest {
     void testLtAndLteRuleEval() {
         assertTrue(Rule.lt(25).eval(20));
         assertFalse(Rule.lt(25).eval(30));
-        assertTrue(Rule.lt(45).not().eval(30));
+        assertTrue(Rule.lt(15).not().eval(30));
 
         assertTrue(Rule.lte(25).eval(25));
         assertTrue(Rule.lte(25).eval(20));
         assertFalse(Rule.lte(25).eval(30));
-        assertTrue(Rule.lte(45).not().eval(30));
+        assertTrue(Rule.lte(15).not().eval(30));
+    }
 
+    @Test
+    void testArbitraryPredicates() {
+        assertTrue(Rule.test((Integer f) -> f > 1).eval(2));
+        assertFalse(Rule.test((Integer f) -> 0 > f).eval(1));
+        assertTrue(Rule.test((Integer f) -> 0 == f).not().eval(1));
     }
 }
