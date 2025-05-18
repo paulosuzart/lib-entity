@@ -71,4 +71,21 @@ public class InvoiceActionControllerTest extends BaseIntegrationTest {
                 .as("Created invoice should be present in filter results")
                 .isTrue();
     }
+
+    @Test
+    void createAndFindInvoiceFailDueToDecision() {
+        // Create invoice
+        CreateInvoiceCommand cmd = new CreateInvoiceCommand();
+        cmd.setEmployeeId("emp1");
+        cmd.setVat(BigDecimal.valueOf(10));
+        cmd.setAmount(BigDecimal.valueOf(100));
+        cmd.setDueDate(LocalDate.now().plusDays(10));
+        // This is a hard-coded forbid submitter
+        cmd.setSubmitterId("98c8627c-2203-4f0b-8d0a-adea7150f6c6");
+        cmd.setSubmitterDeviceId("device1");
+
+        ResponseEntity<InvoiceWithRateResponse> createResp =
+                restTemplate.postForEntity("/invoice/action/create", cmd, InvoiceWithRateResponse.class);
+        assertThat(createResp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

@@ -1,29 +1,94 @@
 package com.libentity.example.config;
 
+import static com.libentity.decision.Rule.any;
+import static com.libentity.decision.Rule.gt;
+import static com.libentity.decision.Rule.in;
+import static com.libentity.decision.Rule.isSet;
+
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.SyncActionExecutor;
 import com.libentity.core.entity.EntityType;
+import com.libentity.decision.DecisionResult;
+import com.libentity.decision.DecisionTable;
+import com.libentity.decision.EvaluationPolicy;
+import com.libentity.decision.MatchingRule;
 import com.libentity.example.invoice.command.ApproveInvoiceCommand;
 import com.libentity.example.invoice.command.CreateInvoiceCommand;
 import com.libentity.example.invoice.command.MarkAsPaidCommand;
 import com.libentity.example.invoice.command.RejectInvoiceCommand;
 import com.libentity.example.invoice.command.SubmitInvoiceCommand;
+import com.libentity.example.invoice.model.InvoiceInput;
+import com.libentity.example.invoice.model.InvoiceInputRuleProvider;
+import com.libentity.example.invoice.model.InvoiceInputValue;
 import com.libentity.example.invoice.model.InvoiceRequestContext;
 import com.libentity.example.invoice.model.InvoiceState;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Slf4j
 public class InvoiceEntityTypeConfig {
 
     @Bean
-    public EntityType<InvoiceState, InvoiceRequestContext> invoiceEntityType() {
+    DecisionTable<InvoiceInput, Boolean, InvoiceInputValue> createApprovalTable() {
+        var blockedRequesters = Set.of(
+                UUID.randomUUID().toString(), UUID.randomUUID().toString(), "98c8627c-2203-4f0b-8d0a-adea7150f6c6");
+        var inputProvider = new InvoiceInputRuleProvider();
+        var rules = List.of(
+                MatchingRule.of(
+                        new InvoiceInput(
+                                in(blockedRequesters),
+                                // it is true if the attribute is present
+                                isSet(),
+                                // custom arbitrary tests
+                                gt(BigDecimal.valueOf(0.0)),
+                                any()),
+                        Boolean.FALSE,
+                        inputProvider),
+                MatchingRule.of(
+                        new InvoiceInput(
+                                // If the org fully matches
+                                any(),
+                                // catch all
+                                any(),
+                                // grater than 100
+                                gt(BigDecimal.valueOf(1.0)),
+                                any()),
+                        Boolean.TRUE,
+                        inputProvider));
+        return new DecisionTable<>("Invoice Creation", rules, inputProvider);
+    }
+
+    @Bean
+    public EntityType<InvoiceState, InvoiceRequestContext> invoiceEntityType(
+            DecisionTable<InvoiceInput, Boolean, InvoiceInputValue> createApprovalTable) {
         EntityType<InvoiceState, InvoiceRequestContext> entityType =
                 EntityType.<InvoiceState, InvoiceRequestContext>builder("Invoice")
+                        .validateInState(InvoiceState.DRAFT, (ignored, request, ctx) -> {
+                            var createDecision = createApprovalTable.evaluate(
+                                    new InvoiceInputValue(
+                                            request.newInvoice().getSubmitterId(),
+                                            request.newInvoice().getDueDate(),
+                                            request.newInvoice().getAmount(),
+                                            request.newInvoice().getApproverId()),
+                                    EvaluationPolicy.First);
+                            log.info(createDecision.diagnose());
+                            if (createDecision instanceof DecisionResult.First<Boolean, InvoiceInputValue> out) {
+                                if (out.getOutput().isEmpty()
+                                        || Boolean.FALSE.equals(out.getOutput().get())) {
+                                    ctx.addError(
+                                            "CREATE_DECISION",
+                                            "Create invoice failed due to decision table: " + out.getOutput());
+                                }
+                            }
+                        })
                         .field("amount", BigDecimal.class, f -> f.validateInState(
                                         InvoiceState.DRAFT, (state, request, ctx) -> {
                                             if (request.newInvoice().getAmount() == null

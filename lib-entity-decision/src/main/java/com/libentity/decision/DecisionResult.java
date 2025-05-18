@@ -36,11 +36,10 @@ public abstract sealed class DecisionResult<O, V>
         }
 
         public Optional<O> getOutput() {
-            var first = getEvaluatedRules().getFirst();
-            if (first == null || !first.truthy()) {
-                return Optional.empty();
-            }
-            return Optional.of(first.output());
+            return getEvaluatedRules().stream()
+                    .filter(e -> e.truthy)
+                    .map(EvaluatedMatchingRule::output)
+                    .findFirst();
         }
     }
 

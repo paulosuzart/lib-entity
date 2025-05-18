@@ -15,4 +15,8 @@ public class MatchingRule<I, O, V> {
         this.output = output;
         this.input = input;
     }
+
+    public static <I, O, V> MatchingRule<I, O, V> of(I input, O output, InputProvider<I, V> inputProvider) {
+        return new MatchingRule<>(input, output, inputProvider);
+    }
 }

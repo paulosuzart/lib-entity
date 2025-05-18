@@ -1,10 +1,10 @@
 package com.libentity.decision;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.Getter;
 
 @Getter
@@ -29,11 +29,11 @@ public class DecisionTable<I, O, V> {
             throw new RuntimeException("No matching rules found");
         }
 
-        Map<String, Object> inputVariables = inputProvider
+        Map<String, Object> inputVariables = new LinkedHashMap<>();
+        inputProvider
                 .getCompileRules(matchingRules.getFirst().getInput())
-                .stream()
-                .collect(Collectors.toMap(
-                        CompiledRule::name, e -> e.extractionFunction().apply(value)));
+                .forEach(
+                        e -> inputVariables.put(e.name(), e.extractionFunction().apply(value)));
 
         List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules = new ArrayList<>();
         for (MatchingRule<I, O, V> matchingRule : matchingRules) {
