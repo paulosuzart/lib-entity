@@ -3,23 +3,20 @@ package com.libentity.decision;
 import com.libentity.decision.internal.DiagnosticTextResultVisitor;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @Getter
-public abstract sealed class DecisionResult<O, V> {
+@RequiredArgsConstructor
+public abstract sealed class DecisionResult<O, V>
+        permits DecisionResult.Collect, DecisionResult.First, DecisionResult.Unique {
     private final V inputValue;
-    private final O output;
     private final Map<String, Object> variables;
-    private final List<EvaluatedRule<V>> evaluatedRules;
-
-    DecisionResult(V inputValue, O output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
-        this.inputValue = inputValue;
-        this.output = output;
-        this.variables = variables;
-        this.evaluatedRules = evaluatedRules;
-    }
+    private final List<EvaluatedMatchingRule<V, O>> evaluatedRules;
 
     public String diagnose() {
         var x = new DiagnosticTextResultVisitor<O, V>();
@@ -29,46 +26,62 @@ public abstract sealed class DecisionResult<O, V> {
 
     public record EvaluatedCompiledRule<V>(CompiledRule<V, ?> rule, boolean evaluated, boolean truthy) {}
 
-    public record EvaluatedRule<V>(
-            boolean evaluated, boolean truthy, List<EvaluatedCompiledRule<V>> evaluatedRuleList) {}
+    public record EvaluatedMatchingRule<V, O>(
+            boolean truthy, List<EvaluatedCompiledRule<V>> evaluatedRuleList, O output) {}
 
     @EqualsAndHashCode(callSuper = true)
-    public static final class FirstMatch<O, V> extends DecisionResult<O, V> {
-
-        public FirstMatch(
-                V inputValue, O output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
-            super(inputValue, output, variables, evaluatedRules);
+    public static final class First<O, V> extends DecisionResult<O, V> {
+        public First(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
+            super(inputValue, variables, evaluatedRules);
         }
 
-        //        private final Map<String, Boolean> resultByRuleName;
-        //        private final Map<String, CompileRuleEvaluationResult> resultByRuleNamex;
-        //        private final DecisionContext decisionContext;
-        //        private final DecisionTable decisionTable;
+        public Optional<O> getOutput() {
+            var first = getEvaluatedRules().getFirst();
+            if (first == null || !first.truthy()) {
+                return Optional.empty();
+            }
+            return Optional.of(first.output());
+        }
     }
 
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
-    public static final class CollectMatch<O, V> extends DecisionResult<O, V> {
-        private List<O> outputs;
+    public static final class Collect<O, V> extends DecisionResult<O, V> {
 
-        public CollectMatch(
-                V inputValue, List<O> output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
-            super(inputValue, null, variables, evaluatedRules);
-            outputs = output;
+        public Collect(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
+            super(inputValue, variables, evaluatedRules);
         }
 
-        //        private final Map<String, Boolean> resultByRuleName;
-        //        private final Map<String, CompileRuleEvaluationResult> resultByRuleNamex;
-        //        private final DecisionContext decisionContext;
-        //        private final DecisionTable decisionTable;
+        public List<O> getOutput() {
+            return getEvaluatedRules().stream()
+                    .map(EvaluatedMatchingRule::output)
+                    .collect(Collectors.toList());
+        }
     }
 
     @EqualsAndHashCode(callSuper = true)
-    public static final class None<O, V> extends DecisionResult<O, V> {
-        public None(V inputValue, O output, Map<String, Object> variables, List<EvaluatedRule<V>> evaluatedRules) {
-            super(inputValue, output, variables, evaluatedRules);
+    @ToString(callSuper = true)
+    public static final class Unique<O, V> extends DecisionResult<O, V> {
+        public Unique(V inputValue, Map<String, Object> variables, List<EvaluatedMatchingRule<V, O>> evaluatedRules) {
+            super(inputValue, variables, evaluatedRules);
         }
-        //        private final DecisionContext<V> decisionContext;
-        //        private final DecisionTable decisionTable;
+
+        public UniqueResult getOutput() {
+            var allResults = getEvaluatedRules().stream()
+                    .filter(res -> res.truthy)
+                    .map(EvaluatedMatchingRule::output)
+                    .toList();
+            if (allResults.size() == 1) {
+                return new UniqueResult.UniqueOutput<>(Optional.of(allResults.get(0)));
+            } else {
+                return new UniqueResult.NonUniqueOutput();
+            }
+        }
+
+        public sealed interface UniqueResult {
+            record UniqueOutput<O>(Optional<O> output) implements UniqueResult {}
+
+            record NonUniqueOutput() implements UniqueResult {}
+        }
     }
 }

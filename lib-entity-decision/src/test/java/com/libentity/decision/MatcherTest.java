@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class RuleEvalTest {
+class MatcherTest {
 
     @Test
     void testIsRuleEval() {
@@ -37,5 +37,18 @@ class RuleEvalTest {
         assertTrue(Rule.gte(25).eval(30));
         assertFalse(Rule.gte(25).eval(20));
         assertTrue(Rule.gte(45).not().eval(30));
+    }
+
+    @Test
+    void testLtAndLteRuleEval() {
+        assertTrue(Rule.lt(25).eval(20));
+        assertFalse(Rule.lt(25).eval(30));
+        assertTrue(Rule.lt(45).not().eval(30));
+
+        assertTrue(Rule.lte(25).eval(25));
+        assertTrue(Rule.lte(25).eval(20));
+        assertFalse(Rule.lte(25).eval(30));
+        assertTrue(Rule.lte(45).not().eval(30));
+
     }
 }

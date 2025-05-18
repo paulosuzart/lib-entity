@@ -7,8 +7,10 @@ import com.libentity.decision.DecisionResultVisitor;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+@RequiredArgsConstructor
 public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<O, V> {
 
     private StringBuilder sb = new StringBuilder();
@@ -22,23 +24,33 @@ public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<
     @Override
     public void visitResult(DecisionResult<O, V> decisionResult) {
         sb.append("Diagnostics: \n");
-        if (decisionResult instanceof DecisionResult.None) {
-            visitOutput(decisionResult.getOutput());
-        } else if (decisionResult instanceof DecisionResult.FirstMatch<O, V> f) {
-            visitOutput(decisionResult.getOutput());
-            visitInputVariables(f.getVariables());
-            visitEvaluatedRules(f.getEvaluatedRules());
-            sb.append("\n");
+        sb.append("Hit Policy: ")
+                .append(decisionResult.getClass().getSimpleName())
+                .append("\n");
+        if (decisionResult instanceof DecisionResult.First<O, V> c) {
+            visitOutput(c.getOutput());
+            visitInputVariables(decisionResult.getVariables());
+            visitEvaluatedRules(c.getEvaluatedRules());
+        } else if (decisionResult instanceof DecisionResult.Collect<O, V> c) {
+            visitOutput(c.getOutput());
+            visitInputVariables(decisionResult.getVariables());
+            visitEvaluatedRules(c.getEvaluatedRules());
+
+        } else if (decisionResult instanceof DecisionResult.Unique<O, V> c) {
+            visitOutput(c.getOutput());
+            visitInputVariables(decisionResult.getVariables());
+            visitEvaluatedRules(c.getEvaluatedRules());
         }
+        sb.append("\n");
     }
 
-    private void visitEvaluatedRules(List<DecisionResult.EvaluatedRule<V>> evaluatedRules) {
-        for (DecisionResult.EvaluatedRule<V> evaluatedRule : evaluatedRules) {
+    private void visitEvaluatedRules(List<DecisionResult.EvaluatedMatchingRule<V, O>> evaluatedRules) {
+        for (DecisionResult.EvaluatedMatchingRule<V, O> evaluatedRule : evaluatedRules) {
             visitEvaluatedRule(evaluatedRule);
         }
     }
 
-    private void visitEvaluatedRule(DecisionResult.EvaluatedRule<V> evaluatedRule) {
+    private void visitEvaluatedRule(DecisionResult.EvaluatedMatchingRule<V, O> evaluatedRule) {
         sb.append("Rule ");
         sb.append(rule++);
         sb.append(" [").append(getTruthyMarker(evaluatedRule.truthy())).append("]:\n");
@@ -57,7 +69,7 @@ public class DiagnosticTextResultVisitor<O, V> implements DecisionResultVisitor<
                 .append("[")
                 .append(getTruthyMarker(vEvaluatedCompiledRule.truthy()))
                 .append("]: ");
-        sb.append(vEvaluatedCompiledRule.rule().ruleEval());
+        sb.append(vEvaluatedCompiledRule.rule().matcher());
         sb.append("\n");
     }
 

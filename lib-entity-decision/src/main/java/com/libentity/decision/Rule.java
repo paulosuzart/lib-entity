@@ -7,49 +7,53 @@ import lombok.Getter;
 @Getter
 public class Rule<T> {
 
-    private final RuleEval<T> ruleEval;
+    private final Matcher<T> matcher;
 
-    public Rule(RuleEval<T> ruleEval) {
-        this.ruleEval = ruleEval;
+    public Rule(Matcher<T> matcher) {
+        this.matcher = matcher;
     }
 
     public boolean eval(T value) {
-        return ruleEval.eval(value);
+        return matcher.eval(value);
     }
 
     public Rule<T> not() {
-        return new Rule<>(ruleEval.not());
+        return new Rule<>(matcher.not());
     }
 
     public static <T> Rule<T> any() {
-        return new Rule<>(new RuleEval.CatchAll<>());
+        return new Rule<>(new Matcher.CatchAll<>());
     }
 
     public static <T> Rule<T> is(T arg) {
-        return new Rule<>(new RuleEval.Is<>(arg));
+        return new Rule<>(new Matcher.Is<>(arg));
     }
 
     public static <T extends Comparable<T>> Rule<T> gt(T arg) {
-        return new Rule<>(new RuleEval.Gt<>(arg));
+        return new Rule<>(new Matcher.Gt<>(arg));
     }
 
-    public static <T extends Number> Rule<T> gte(T arg) {
-        return new Rule<>(new RuleEval.Gte<>(arg));
+    public static <T extends Comparable<T>> Rule<T> gte(T arg) {
+        return new Rule<>(new Matcher.Gte<>(arg));
     }
 
-    public static <T extends Number> Rule<T> lt(T arg) {
-        return new Rule<>(new RuleEval.Lt<>(arg));
+    public static <T extends Comparable<T>> Rule<T> lt(T arg) {
+        return new Rule<>(new Matcher.Lt<>(arg));
+    }
+
+    public static <T extends Comparable<T>> Rule<T> lte(T arg) {
+        return new Rule<>(new Matcher.Lte<>(arg));
     }
 
     public static <T> Rule<T> in(Set<T> arg) {
-        return new Rule<>(new RuleEval.In<>(arg));
+        return new Rule<>(new Matcher.In<>(arg));
     }
 
     public static <T> Rule<T> isSet() {
-        return new Rule<>(new RuleEval.IsSet<>());
+        return new Rule<>(new Matcher.IsSet<>());
     }
 
     public static <T> Rule<T> test(Predicate<T> predicate) {
-        return new Rule<>(new RuleEval.Test<>(predicate));
+        return new Rule<>(new Matcher.Test<>(predicate));
     }
 }

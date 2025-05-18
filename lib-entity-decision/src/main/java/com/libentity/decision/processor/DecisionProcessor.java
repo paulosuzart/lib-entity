@@ -198,8 +198,8 @@ public class DecisionProcessor extends AbstractProcessor {
                     """
                        new $T<$T, $T>(
                                       $S,
-                                      input.$L.getRuleEval(),
-                                      f -> input.$L.getRuleEval().eval(f), i -> i.$L())""",
+                                      input.$L.getMatcher(),
+                                      f -> input.$L.getMatcher().eval(f), i -> i.$L())""",
                     ClassName.get("com.libentity.decision", "CompiledRule"),
                     valueType,
                     fieldGenericType,

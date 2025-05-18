@@ -14,6 +14,7 @@ import com.libentity.example.invoice.model.Invoice;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,17 +53,26 @@ public class Ruler {
                         inputProvider));
 
         var result = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
-                .evaluateFirst(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
+                .evaluateFirst(
+                        new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver),
+                        DecisionTable.EvaluationPolicy.Unique);
 
-        switch (result) {
-            case DecisionResult.None<Action, InvoiceInputValue> ignored -> System.out.println("No rule match");
-            case DecisionResult.FirstMatch<Action, InvoiceInputValue> out -> System.out.println(out.diagnose());
-            default -> throw new IllegalStateException("Unexpected value: " + result);
+        if (Objects.requireNonNull(result) instanceof DecisionResult.First<Action, InvoiceInputValue> out) {
+            System.out.println(out.diagnose());
+            System.out.println("The output is " + out.getOutput().get());
+
+        } else if (Objects.requireNonNull(result) instanceof DecisionResult.Unique<Action, InvoiceInputValue> out) {
+            System.out.println(out.diagnose());
+            System.out.println(out.getOutput());
+        } else {
+            throw new IllegalStateException("Unexpected value: " + result);
         }
 
-        var x = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
-                .collect(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
-        System.out.println(x);
+        //        var x = new DecisionTable<>("Invoice Can Export", rules, inputProvider)
+        //                .collect(new InvoiceInputValue(vatExempt, LocalDate.now(), BigDecimal.TEN, approver));
+        //
+        //        System.out.println("Collect");
+        //        System.out.println(x.diagnose());
     }
 
     public static void main(String[] args) {
