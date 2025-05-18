@@ -213,7 +213,7 @@ A full-featured Spring Boot example application demonstrating how to use the cor
 
 ---
 
-Each module is designed to be as independent and reusable as possible, so you can pick and choose the parts that best fit your needs. For more details, see the documentation in the `docs` folder or explore the example project!
+Each module is designed to be as independent and reusable as possible, so you can pick and choose the parts that best fit your needs.
 
 ## Integration with Spring Boot
 
