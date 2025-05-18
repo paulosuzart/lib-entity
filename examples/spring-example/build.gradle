@@ -32,7 +32,9 @@ dependencies {
     implementation project(':lib-entity-core')
     implementation project(':lib-entity-jooq')
     implementation project(':lib-entity-annotations')
+    implementation project(':lib-entity-decision')
     annotationProcessor project(':lib-entity-jooq')
+    annotationProcessor project(':lib-entity-decision')
     
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-jooq'

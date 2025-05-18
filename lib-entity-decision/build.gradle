@@ -1,0 +1,86 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.libentity'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    generatedTest {
+        java {
+            srcDirs = ['src/generatedTest/java']
+        }
+        resources {
+            srcDirs = ['src/generatedTest/resources']
+        }
+        // Include main output and dependencies for compilation and runtime
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.generatedTest.output + configurations.runtimeClasspath
+    }
+}
+
+configurations {
+    // Extend configurations for generatedTest
+    generatedTestImplementation.extendsFrom implementation
+    generatedTestRuntimeOnly.extendsFrom runtimeOnly
+    generatedTestAnnotationProcessor // For annotation processor dependencies
+}
+
+dependencies {
+    // Main dependencies
+    implementation 'com.palantir.javapoet:javapoet:0.7.0'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+
+    // Test dependencies (existing)
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'com.google.testing.compile:compile-testing:0.21.0'
+    testImplementation 'com.google.truth:truth:1.4.2'
+
+    // Test dependencies for generatedTest
+    generatedTestImplementation platform('org.junit:junit-bom:5.10.0')
+    generatedTestImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    generatedTestImplementation 'com.google.truth:truth:1.4.2'
+    // Include main output for generatedTest to access processor classes if needed
+    generatedTestImplementation sourceSets.main.output
+    // Use main output as the annotation processor
+    generatedTestAnnotationProcessor 'com.palantir.javapoet:javapoet:0.7.0'
+    generatedTestAnnotationProcessor files(sourceSets.main.output)
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('generatedTest', Test) {
+    description = 'Runs tests in generatedTest sourceSet'
+    group = 'verification'
+    testClassesDirs = sourceSets.generatedTest.output.classesDirs
+    classpath = sourceSets.generatedTest.runtimeClasspath
+    useJUnitPlatform()
+    // Ensure annotation processing runs before tests
+    dependsOn tasks.named('compileGeneratedTestJava')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('generatedTest')
+}
+
+// Configure annotation processing for generatedTest
+tasks.named('compileGeneratedTestJava') {
+    options.annotationProcessorPath = configurations.generatedTestAnnotationProcessor
+    // Specify output directory for generated sources
+    options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/sources/annotationProcessor/java/generatedTest")
+}
+
+//// Ensure IDEs recognize generated sources
+//idea {
+//    module {
+//        sourceDirs += file("$buildDir/generated/sources/annotationProcessor/java/generatedTest")
+//        generatedSourceDirs += file("$buildDir/generated/sources/annotationProcessor/java/generatedTest")
+//    }
+//}

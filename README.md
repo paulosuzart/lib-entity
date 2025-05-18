@@ -195,17 +195,21 @@ SubmitResponse response = builder.getResponse();
 
 ## Project Modules
 
-### `library`
-The core module of the project. It provides the essential abstractions for entity types, filters, actions, and validation. This is where you will find the foundation for building flexible, metadata-driven business logic. All other modules depend on this one.
+### `lib-entity-code`
+The core module of the project. It provides the essential abstractions for entity types, filters, actions, and validation. This is where you will find the foundation for building flexible, metadata-driven business logic. All other modules depend on this one. [Read more](https://paulosuzart.github.io/lib-entity-doc/concepts/)
 
-### `jooq-support`
-A utility module that provides generic support for integrating the core filter abstractions with jOOQ. It allows you to automatically translate filter objects into jOOQ `Condition`s, reducing boilerplate in repository layers. Use this module if you want to leverage the power of jOOQ with minimal effort.
+### `lib-entity-annotations`
+Offers annotation backed entity definition. [See more](https://paulosuzart.github.io/lib-entity-doc/integrations/annotations/).
+
+### `lib-entity-jooq`
+A utility module that provides generic support for integrating the core filter abstractions with jOOQ. It allows you to automatically translate filter objects into jOOQ `Condition`s, reducing boilerplate in repository layers. Use this module if you want to leverage the power of jOOQ with minimal effort. [Read more](https://paulosuzart.github.io/lib-entity-doc/integrations/jooq/).
+
+## `lib-entity-decision`
+A decision table engine inspired by [decision4s](https://business4s.org/decisions4s). [Read more](https://paulosuzart.github.io/lib-entity-doc/integrations/decision/).
 
 ### `examples/spring-example`
 A full-featured Spring Boot example application demonstrating how to use the core library and jooq-support modules in a real-world scenario. It includes sample entities, repositories, business rules, and integration tests. Start here if you want to see how everything fits together in practice.
 
-### `docs`
-Contains project documentation, guides, and reference materials. Check this folder for detailed explanations, API usage, and advanced topics. Great for both beginners and advanced users looking to extend or contribute to the project.
 
 ---
 
