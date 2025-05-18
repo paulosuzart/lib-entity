@@ -9,7 +9,6 @@ import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.SyncActionExecutor;
 import com.libentity.core.entity.EntityType;
 import com.libentity.decision.DecisionTable;
-import com.libentity.decision.HitPolicy;
 import com.libentity.decision.MatchingRule;
 import com.libentity.example.invoice.command.ApproveInvoiceCommand;
 import com.libentity.example.invoice.command.CreateInvoiceCommand;
@@ -77,13 +76,13 @@ public class InvoiceEntityTypeConfig {
                                     request.newInvoice().getAmount(),
                                     request.newInvoice().getApproverId()));
                             log.info(createDecision.diagnose());
-                            if (createDecision instanceof HitPolicy.First<Boolean, InvoiceInputValue> out) {
-                                if (out.getOutput().isEmpty()
-                                        || Boolean.FALSE.equals(out.getOutput().get())) {
-                                    ctx.addError(
-                                            "CREATE_DECISION",
-                                            "Create invoice failed due to decision table: " + out.getOutput());
-                                }
+
+                            if (createDecision.getOutput().isEmpty()
+                                    || Boolean.FALSE.equals(
+                                            createDecision.getOutput().get())) {
+                                ctx.addError(
+                                        "CREATE_DECISION",
+                                        "Create invoice failed due to decision table: " + createDecision.getOutput());
                             }
                         })
                         .field("amount", BigDecimal.class, f -> f.validateInState(
