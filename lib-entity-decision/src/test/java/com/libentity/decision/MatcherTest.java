@@ -57,4 +57,22 @@ class MatcherTest {
         assertFalse(Rule.test((Integer f) -> 0 > f).eval(1));
         assertTrue(Rule.test((Integer f) -> 0 == f).not().eval(1));
     }
+
+    @Test
+    void testOrMatching() {
+        var outsideRange = Rule.lt(0).or(Rule.gt(100));
+        assertTrue(outsideRange.eval(-200));
+        assertTrue(outsideRange.eval(200));
+        assertFalse(outsideRange.eval(50));
+    }
+
+    @Test
+    void testAndMatching() {
+        var insideRange = Rule.gt(0).and(Rule.lt(100));
+        assertTrue(insideRange.eval(50));
+        assertFalse(insideRange.eval(200));
+        assertEquals("> 0 and < 100", insideRange.getMatcher().toString());
+        System.out.println(insideRange.or(Rule.gt(100)).toString());
+        assertTrue(insideRange.or(Rule.gt(70)).eval(50));
+    }
 }
