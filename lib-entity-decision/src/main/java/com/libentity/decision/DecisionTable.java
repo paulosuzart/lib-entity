@@ -8,6 +8,13 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import lombok.Getter;
 
+/**
+ * Represents a decision table that can evaluate input values based on matching rules.
+ *
+ * @param <I> The type of the input to the matching rules.
+ * @param <O> The type of the output value.
+ * @param <V> The type of the input value to be evaluated.
+ */
 @Getter
 public class DecisionTable<I, O, V> {
 
@@ -105,7 +112,7 @@ public class DecisionTable<I, O, V> {
                 var evalF = (Function<Object, Boolean>) rule.evalFunction();
                 var result = evalF.apply(attributeValue);
                 matches = matches && result;
-                evaluatedCompiledRules.add(new HitPolicy.EvaluatedCompiledRule<>(rule, true, matches));
+                evaluatedCompiledRules.add(new HitPolicy.EvaluatedCompiledRule<>(rule, true, result));
             }
 
             var truthy = evaluatedCompiledRules.stream().allMatch(HitPolicy.EvaluatedCompiledRule::truthy);

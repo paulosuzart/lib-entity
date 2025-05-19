@@ -15,9 +15,9 @@ class MatcherTest {
 
     @Test
     void testIsSetRuleEval() {
-        assertTrue(Rule.isSet().eval(9982));
-        assertFalse(Rule.isSet().eval(null));
-        assertTrue(Rule.isSet().not().eval(null));
+        assertTrue(Rule.isPresent().eval(9982));
+        assertFalse(Rule.isPresent().eval(null));
+        assertTrue(Rule.isPresent().not().eval(null));
     }
 
     @Test

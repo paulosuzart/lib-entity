@@ -2,8 +2,10 @@ package com.libentity.decision;
 
 import java.util.Set;
 import java.util.function.Predicate;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+@EqualsAndHashCode
 @Getter
 public class Rule<T> {
 
@@ -19,6 +21,10 @@ public class Rule<T> {
 
     public Rule<T> not() {
         return new Rule<>(matcher.not());
+    }
+
+    public Rule<T> or(Rule<T> rule) {
+        return new Rule<>(matcher.or(rule.matcher));
     }
 
     public static <T> Rule<T> any() {
@@ -49,8 +55,8 @@ public class Rule<T> {
         return new Rule<>(new Matcher.In<>(arg));
     }
 
-    public static <T> Rule<T> isSet() {
-        return new Rule<>(new Matcher.IsSet<>());
+    public static <T> Rule<T> isPresent() {
+        return new Rule<>(new Matcher.IsPresent<>());
     }
 
     public static <T> Rule<T> test(Predicate<T> predicate) {

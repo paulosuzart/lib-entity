@@ -81,51 +81,6 @@ public class DecisionProcessor extends AbstractProcessor {
         javaFile.writeTo(processingEnv.getFiler());
     }
 
-    //    // Generate <OriginalClass>RuleProvider
-    //    private void generateRuleProviderClass(TypeElement typeElement) throws IOException {
-    //        String packageName = processingEnv
-    //                .getElementUtils()
-    //                .getPackageOf(typeElement)
-    //                .getQualifiedName()
-    //                .toString();
-    //        String className = typeElement.getSimpleName() + "RuleProvider";
-    //        String inputClassName = typeElement.getSimpleName().toString();
-    //        TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className).addModifiers(Modifier.PUBLIC);
-    //
-    //        // Collect field names
-    //        List<String> fieldNames = new ArrayList<>();
-    //        for (Element enclosed : typeElement.getEnclosedElements()) {
-    //            if (enclosed.getKind() == ElementKind.FIELD) {
-    //                VariableElement field = (VariableElement) enclosed;
-    //                fieldNames.add(field.getSimpleName().toString());
-    //            }
-    //        }
-    //
-    //        // Generate static getRules(Input input) method
-    //        MethodSpec getRules = MethodSpec.methodBuilder("getRules")
-    //                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-    //                .addParameter(ClassName.get(packageName, inputClassName), "input")
-    //                .returns(ParameterizedTypeName.get(
-    //                        ClassName.get(List.class),
-    //                        ParameterizedTypeName.get(
-    //                                ClassName.get("com.libentity.decision", "Rule"),
-    //                                WildcardTypeName.subtypeOf(ClassName.get("java.lang", "Object")))))
-    //                .addStatement(
-    //                        "return $T.of($L)",
-    //                        ClassName.get(List.class),
-    //                        fieldNames.stream().map(name -> "input." + name).collect(Collectors.joining(", ")))
-    //                .build();
-    //        classBuilder.addMethod(getRules);
-    //
-    //        // Define I<Input> interface type
-    //        TypeName inputType = ClassName.get(packageName, inputClassName);
-    //        ParameterizedTypeName interfaceType =
-    //                ParameterizedTypeName.get(ClassName.get("com.libentity.decision", "I"), inputType);
-    //
-    //        JavaFile javaFile = JavaFile.builder(packageName, classBuilder.build()).build();
-    //        javaFile.writeTo(processingEnv.getFiler());
-    //    }
-
     private void generateRuleProviderClass(TypeElement typeElement) throws IOException {
         String packageName = processingEnv
                 .getElementUtils()

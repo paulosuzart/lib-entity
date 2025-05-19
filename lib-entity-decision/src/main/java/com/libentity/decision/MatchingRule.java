@@ -1,9 +1,18 @@
 package com.libentity.decision;
 
 import java.util.List;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * Represents a matching rule that matches a specific input to a corresponding output based on compiled rules.
+ *
+ * @param <I> The type of the input
+ * @param <O> The type of the output
+ * @param <V> The type of the intermediate value
+ */
 @Getter
+@EqualsAndHashCode
 public class MatchingRule<I, O, V> {
 
     private final I input;
