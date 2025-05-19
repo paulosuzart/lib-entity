@@ -4,7 +4,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
 
+/**
+ * A Matcher simply wraps a predicate and a label.
+ * <p><b>Important:</b>At the moment the label is eagerly calculated.</p>
+ */
+@EqualsAndHashCode
 public class Matcher<T> {
 
     protected Predicate<T> predicate;
@@ -25,7 +31,15 @@ public class Matcher<T> {
     }
 
     public Matcher<T> not() {
-        return new Matcher<>(t -> !eval(t), "!" + label);
+        return new Matcher<>(predicate.negate(), "!" + label);
+    }
+
+    public Matcher<T> and(Matcher<T> other) {
+        return new Matcher<>(predicate.and(other.predicate), label + " and " + other.label);
+    }
+
+    public Matcher<T> or(Matcher<T> other) {
+        return new Matcher<>(predicate.or(other.predicate), label + " or " + other.label);
     }
 
     public static class CatchAll<T> extends Matcher<T> {
@@ -40,22 +54,20 @@ public class Matcher<T> {
         }
     }
 
-    static class IsSet<T> extends Matcher<T> {
-        IsSet() {
-            super(Objects::nonNull, "isSet");
+    public static class IsPresent<T> extends Matcher<T> {
+        IsPresent() {
+            super((T s) -> s != null, "isPresent");
         }
     }
 
-    static final class Test<T> extends Matcher<T> {
-
+    public static final class Test<T> extends Matcher<T> {
         Test(Predicate<T> predicate) {
             super(predicate, "opaque predicate");
         }
     }
 
-    static class Lt<T extends Comparable<T>> extends Matcher<T> {
-
-        public Lt(T target) {
+    public static class Lt<T extends Comparable<T>> extends Matcher<T> {
+        Lt(T target) {
             super(
                     value -> {
                         if (value == null || target == null) {
@@ -67,8 +79,8 @@ public class Matcher<T> {
         }
     }
 
-    static class Lte<T extends Comparable<T>> extends Matcher<T> {
-        public Lte(T target) {
+    public static class Lte<T extends Comparable<T>> extends Matcher<T> {
+        Lte(T target) {
             // keeping full code duplication for now
             super(
                     value -> {
@@ -95,7 +107,7 @@ public class Matcher<T> {
     }
 
     public static class Gte<T extends Comparable<T>> extends Matcher<T> {
-        public Gte(T target) {
+        Gte(T target) {
             super(
                     value -> {
                         if (value == null || target == null) {
@@ -110,7 +122,7 @@ public class Matcher<T> {
     public static class In<T> extends Matcher<T> {
         private static final int MAX_IN_LABEL = 5;
 
-        public In(Set<T> target) {
+        In(Set<T> target) {
             super(
                     target::contains,
                     "in( %s )%s"

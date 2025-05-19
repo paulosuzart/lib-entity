@@ -3,7 +3,7 @@ package com.libentity.example.config;
 import static com.libentity.decision.Rule.any;
 import static com.libentity.decision.Rule.gt;
 import static com.libentity.decision.Rule.in;
-import static com.libentity.decision.Rule.isSet;
+import static com.libentity.decision.Rule.isPresent;
 
 import com.libentity.core.action.ActionExecutor;
 import com.libentity.core.action.SyncActionExecutor;
@@ -44,7 +44,7 @@ public class InvoiceEntityTypeConfig {
                         new InvoiceInput(
                                 in(blockedRequesters),
                                 // it is true if the attribute is present
-                                isSet(),
+                                isPresent(),
                                 // custom arbitrary tests
                                 gt(BigDecimal.valueOf(0.0)),
                                 any()),
