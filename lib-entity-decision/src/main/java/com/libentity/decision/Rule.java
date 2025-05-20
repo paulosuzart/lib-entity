@@ -15,6 +15,11 @@ public class Rule<T> {
         this.matcher = matcher;
     }
 
+    @Override
+    public String toString() {
+        return matcher.toString();
+    }
+
     public boolean eval(T value) {
         return matcher.eval(value);
     }
@@ -25,6 +30,10 @@ public class Rule<T> {
 
     public Rule<T> or(Rule<T> rule) {
         return new Rule<>(matcher.or(rule.matcher));
+    }
+
+    public Rule<T> and(Rule<T> rule) {
+        return new Rule<>(matcher.and(rule.matcher));
     }
 
     public static <T> Rule<T> any() {

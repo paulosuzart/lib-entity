@@ -1,6 +1,7 @@
 package com.libentity.decision;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -56,7 +57,17 @@ public class Matcher<T> {
 
     public static class IsPresent<T> extends Matcher<T> {
         IsPresent() {
-            super((T s) -> s != null, "isPresent");
+            super(
+                    (T s) -> {
+                        if (s == null) {
+                            return false;
+                        }
+                        if (s instanceof Optional) {
+                            return ((Optional<?>) s).isPresent();
+                        }
+                        return true;
+                    },
+                    "isPresent");
         }
     }
 
